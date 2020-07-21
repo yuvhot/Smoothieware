@@ -2,6 +2,10 @@ PROJECT=main
 BUILD_DIR=../build
 DEVICES=lpc1768
 
+CNC=1
+PNP=1
+AXIS=5
+
 # BUILD_TYPE can be set to the following values:
 #  Checked - Optimizations enabled with MRI debug monitor support. (Recommended Type)
 #  Release - Optimizations enabled.
@@ -70,12 +74,17 @@ ifneq "$(NODEFAULTEXCLUDES)" "1"
 
 ifeq "$(EXCLUDE_MODULES)" ""
 
+ifeq "$(PNP)" "1"
+# CNC build excludes these
+export EXCLUDE_MODULES = tools/filamentdetector tools/scaracal tools/temperaturecontrol tools/temperatureswitch tools/extruder tools/drillingcycles tools/spindle
+else
 ifeq "$(CNC)" "1"
 # CNC build excludes these
 export EXCLUDE_MODULES = tools/filamentdetector tools/scaracal tools/temperaturecontrol tools/temperatureswitch tools/extruder
 else
 # 3D build excludes these
 export EXCLUDE_MODULES = tools/drillingcycles tools/spindle
+endif
 endif
 
 endif
