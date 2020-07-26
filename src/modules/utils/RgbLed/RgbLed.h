@@ -29,6 +29,8 @@ private:
     uint8_t addr;
     mbed::I2C* i2c;
 
+    Pin sda_pin, scl_pin;
+
 };
 
 #endif /* _RGBLED_H */

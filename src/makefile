@@ -135,6 +135,13 @@ flash: ../LPC1768/$(PROJECT).hex debug-store
 dfu: ../LPC1768/$(PROJECT).bin
 	dfu-util -D $< -R
 
+dfu_pi3: ../LPC1768/$(PROJECT).bin
+	scp $< pi3:~/tmp/firmware.bin
+	ssh pi3 "sudo dfu-util -R -D ~/tmp/firmware.bin"
+
+console_pi3:
+	ssh pi3 "stty raw ignbrk -echo $(BAUD) < $(CONSOLE)"
+
 upload: ../LPC1768/$(PROJECT).bin debug-store
 	dfu-util -R -d 1d50:6015 -D $<
 
