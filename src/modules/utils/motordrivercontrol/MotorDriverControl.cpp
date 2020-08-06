@@ -140,7 +140,7 @@ bool MotorDriverControl::config_module(uint16_t cs)
         sw_uart_tx_pin->from_string(THEKERNEL->config->value(motor_driver_control_checksum, cs, sw_uart_tx_pin_checksum)->by_default("nc")->as_string())->as_output();
         
         if(!sw_uart_tx_pin->connected()) {
-            THEKERNEL->streams->printf("MotorDriverControl %c ERROR: uart tx pin not defined\n", axis);
+            printf("MotorDriverControl %c ERROR: uart tx pin not defined\n", axis);
             return false; 
         }
         
@@ -151,7 +151,7 @@ bool MotorDriverControl::config_module(uint16_t cs)
         if (THEKERNEL->config->value(motor_driver_control_checksum, cs, sw_uart_rx_pin_checksum)->by_default("nc")->as_string() != "nc" ) {            
             sw_uart_rx_pin->from_string(THEKERNEL->config->value(motor_driver_control_checksum, cs, sw_uart_rx_pin_checksum)->by_default("nc")->as_string())->as_input();
             if(!sw_uart_rx_pin->connected()) {
-                THEKERNEL->streams->printf("MotorDriverControl %c ERROR: cannot open RX PIN, falling back to writeonly!\n", axis);
+                printf("MotorDriverControl %c ERROR: cannot open RX PIN, falling back to writeonly!\n", axis);
                 write_only = true;
             } else {
                 rxd = port_pin((PortName)(sw_uart_rx_pin->port_number), sw_uart_rx_pin->pin);
@@ -177,7 +177,7 @@ bool MotorDriverControl::config_module(uint16_t cs)
         spi_cs_pin = new Pin();
         spi_cs_pin->from_string(THEKERNEL->config->value( motor_driver_control_checksum, cs, spi_cs_pin_checksum)->by_default("nc")->as_string())->as_output();
         if(!spi_cs_pin->connected()) {
-            THEKERNEL->streams->printf("MotorDriverControl %c ERROR: chip select not defined\n", axis);
+            printf("MotorDriverControl %c ERROR: chip select not defined\n", axis);
             return false; // if not defined then we can't use this instance
         }
         spi_cs_pin->set(1);
@@ -201,7 +201,7 @@ bool MotorDriverControl::config_module(uint16_t cs)
         this->spi->frequency(spi_frequency);
         this->spi->format(8, 3); // 8bit, mode3
     } else {
-        THEKERNEL->streams->printf("MotorDriverControl %c ERROR: Unsupported connection method! Only SPI and UART supported.\n", axis);
+        printf("MotorDriverControl %c ERROR: Unsupported connection method! Only SPI and UART supported.\n", axis);
         return false;
     }
 
@@ -248,9 +248,9 @@ bool MotorDriverControl::config_module(uint16_t cs)
 
     //finish driver setup
     if(DRV->connection_method== StepstickParameters::UART) {
-        THEKERNEL->streams->printf("MotorDriverControl INFO: configured motor %c (%d): as %s, tx: %04X, rx: %04X\n", axis, id, THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string().c_str(), (sw_uart_tx_pin->port_number<<8)|sw_uart_tx_pin->pin, (sw_uart_rx_pin->port_number<<8)|sw_uart_rx_pin->pin);
+        printf("MotorDriverControl INFO: configured motor %c (%d): as %s, tx: %04X, rx: %04X\n", axis, id, THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string().c_str(), (sw_uart_tx_pin->port_number<<8)|sw_uart_tx_pin->pin, (sw_uart_rx_pin->port_number<<8)|sw_uart_rx_pin->pin);
     } else {
-        THEKERNEL->streams->printf("MotorDriverControl INFO: configured motor %c (%d): as %s, cs: %04X\n", axis, id, THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string().c_str(), (spi_cs_pin->port_number<<8)|spi_cs_pin->pin);
+        printf("MotorDriverControl INFO: configured motor %c (%d): as %s, cs: %04X\n", axis, id, THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string().c_str(), (spi_cs_pin->port_number<<8)|spi_cs_pin->pin);
     }
 
     return true;
@@ -301,7 +301,7 @@ void MotorDriverControl::on_second_tick(void *argument)
 
     if(halt_on_alarm && alarm) {
         THEKERNEL->call_event(ON_HALT, nullptr);
-        THEKERNEL->streams->printf("Error: Motor Driver alarm - reset or M999 required to continue\r\n");
+        printf("Error: Motor Driver alarm - reset or M999 required to continue\r\n");
     }
 }
 
