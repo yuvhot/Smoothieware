@@ -97,12 +97,13 @@ bool MotorDriverControl::config_module(uint16_t cs)
         return false; // axis is illegal
     }
 
-    spi_cs_pin.from_string(THEKERNEL->config->value( motor_driver_control_checksum, cs, spi_cs_pin_checksum)->by_default("nc")->as_string())->as_output();
+/*    spi_cs_pin.from_string(THEKERNEL->config->value( motor_driver_control_checksum, cs, spi_cs_pin_checksum)->by_default("nc")->as_string())->as_output();
     if(!spi_cs_pin.connected()) {
         printf("MotorDriverControl %c ERROR: chip select not defined\n", axis);
         return false; // if not defined then we can't use this instance
-    }
+    } 
     spi_cs_pin.set(1);
+*/
 
     str= THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string();
     if(str.empty()) {
@@ -166,7 +167,6 @@ bool MotorDriverControl::config_module(uint16_t cs)
             }
         }
 
-<<<<<<< HEAD
         DRV->set_write_only(write_only);
         this->serial = new BufferedSoftSerial(txd, rxd);
 
@@ -176,18 +176,6 @@ bool MotorDriverControl::config_module(uint16_t cs)
         if (sw_uart_baudrate < 9600 || sw_uart_baudrate > 115200) {
             sw_uart_baudrate = 9600;
         }
-=======
-    // select SPI channel to use
-    PinName mosi, miso, sclk;
-    if(spi_channel == 0) {
-        mosi = P0_18; miso = P0_17; sclk = P0_15;
-    } else if(spi_channel == 1) {
-        mosi = P0_9; miso = P0_8; sclk = P0_7;
-    } else {
-        printf("MotorDriverControl %c ERROR: Unknown SPI Channel: %d\n", axis, spi_channel);
-        return false;
-    }
->>>>>>> edge
 
         this->serial->baud(sw_uart_baudrate);
     } else if(DRV->connection_method == StepstickParameters::SPI ) {
@@ -266,16 +254,12 @@ bool MotorDriverControl::config_module(uint16_t cs)
         this->register_for_event(ON_SECOND_TICK);
     }
 
-<<<<<<< HEAD
     //finish driver setup
     if(DRV->connection_method== StepstickParameters::UART) {
         THEKERNEL->streams->printf("MotorDriverControl INFO: configured motor %c (%d): as %s, tx: %04X, rx: %04X\n", axis, id, THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string().c_str(), (sw_uart_tx_pin->port_number<<8)|sw_uart_tx_pin->pin, (sw_uart_rx_pin->port_number<<8)|sw_uart_rx_pin->pin);
     } else {
         THEKERNEL->streams->printf("MotorDriverControl INFO: configured motor %c (%d): as %s, cs: %04X\n", axis, id, THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string().c_str(), (spi_cs_pin->port_number<<8)|spi_cs_pin->pin);
     }
-=======
-    printf("MotorDriverControl INFO: configured motor %c (%d): as %s, cs: %04X\n", axis, id, chip==TMC2660?"TMC2660":chip==DRV8711?"DRV8711":"UNKNOWN", (spi_cs_pin.port_number<<8)|spi_cs_pin.pin);
->>>>>>> edge
 
     return true;
 }
