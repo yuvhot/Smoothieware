@@ -21,7 +21,6 @@ class Modbus : public Module {
         Modbus( PinName rx_pin, PinName tx_pin, PinName dir_pin, int baud_rate, const char *format);
 
         void on_module_loaded();
-        void on_serial_char_received();
 
         void read_coil(int slave_addr, int coil_addr, int n_coils);
         void read_holding_register(int slave_addr, int reg_addr, int n_regs);

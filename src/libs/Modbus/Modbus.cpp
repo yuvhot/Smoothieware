@@ -10,12 +10,13 @@
 #include "libs/nuts_bolts.h"
 #include "libs/gpio.h"
 #include "BufferedSoftSerial.h"
+#include "SerialParams.h"
 #include "Modbus.h"
 
 Modbus::Modbus( PinName tx_pin, PinName rx_pin, PinName dir_pin){
     serial = new BufferedSoftSerial( tx_pin, rx_pin );
     serial->baud(9600);
-    serial->format(8,serial->Parity::None,1);
+    serial->format(8,SerialParams::Parity::None,1);
     calculate_delay(9600, 8, 0, 1);
     dir_output = new GPIO(dir_pin);
     dir_output->output();
@@ -25,7 +26,7 @@ Modbus::Modbus( PinName tx_pin, PinName rx_pin, PinName dir_pin){
 Modbus::Modbus( PinName tx_pin, PinName rx_pin, PinName dir_pin, int baud_rate){
     serial = new BufferedSoftSerial( tx_pin, rx_pin );
     serial->baud(baud_rate);
-    serial->format(8,serial->Parity::None,1);
+    serial->format(8,SerialParams::Parity::None,1);
     calculate_delay(baud_rate, 8, 0, 1);
     dir_output = new GPIO(dir_pin);
     dir_output->output();
@@ -35,21 +36,21 @@ Modbus::Modbus( PinName tx_pin, PinName rx_pin, PinName dir_pin, int baud_rate){
 Modbus::Modbus( PinName tx_pin, PinName rx_pin, PinName dir_pin, int baud_rate, const char *format){
     serial = new BufferedSoftSerial( tx_pin, rx_pin );
     serial->baud(baud_rate);
-    
+
     if(strncmp(format, "8N1", 3) == 0){
-        serial->format(8,serial->Parity::None,1);
+        serial->format(8,SerialParams::Parity::None,1);
         calculate_delay(baud_rate, 8, 0, 1);
     } else if(strncmp(format, "8O1", 3) == 0){
-        serial->format(8,serial->Parity::Odd,1);
+        serial->format(8,SerialParams::Parity::Odd,1);
         calculate_delay(baud_rate, 8, 1, 1);
     } else if(strncmp(format, "8E1", 3) == 0){
-        serial->format(8,serial->Parity::Even,1);
+        serial->format(8,SerialParams::Parity::Even,1);
         calculate_delay(baud_rate, 8, 1, 1);
     } else if(strncmp(format, "8N2", 3) == 0){
-        serial->format(8,serial->Parity::None,2);
+        serial->format(8,SerialParams::Parity::None,2);
         calculate_delay(baud_rate, 8, 0, 2);
     } else {
-        serial->format(8,serial->Parity::None,1);
+        serial->format(8,SerialParams::Parity::None,1);
         calculate_delay(baud_rate, 8, 0, 1);
     }
     dir_output = new GPIO(dir_pin);
@@ -60,12 +61,7 @@ Modbus::Modbus( PinName tx_pin, PinName rx_pin, PinName dir_pin, int baud_rate, 
 // Called when the module has just been loaded
 void Modbus::on_module_loaded() {
     // We want to be called every time a new char is received
-    serial->attach(this, &Modbus::on_serial_char_received, BufferedSoftSerial::RxIrq);
-}
-
-// Called on Serial::RxIrq interrupt, meaning we have received a char
-void Modbus::on_serial_char_received(){
-    buffer.push_back(serial->getc());
+    serial->attach([this](const unsigned char c) { buffer.push_back(c); });
 }
 
 void Modbus::read_coil(int slave_addr, int coil_addr, int n_coils){
@@ -77,7 +73,7 @@ void Modbus::read_coil(int slave_addr, int coil_addr, int n_coils){
     telegram[3] = coil_addr & 0xFF; // Coil address LSB
     telegram[4] = (n_coils >> 8);   // number of coils to read MSB
     telegram[5] = n_coils & 0xFF;   // number of coils to read LSB
-    crc = crc16(telegram, 6);       
+    crc = crc16(telegram, 6);
     telegram[6] = crc;              // CRC LSB
     telegram[7] = (crc >> 8);       // CRC MSB
     dir_output->set();
@@ -101,7 +97,7 @@ void Modbus::write_coil(int slave_addr, int coil_addr, bool data){
     telegram[3] = coil_addr & 0xFF; // Coil address LSB
     telegram[4] = 0x00;             // Data MSB
     telegram[5] = (data == true) ? 0xFF : 0x00; // Data LSB
-    crc = crc16(telegram, 6);       
+    crc = crc16(telegram, 6);
     telegram[6] = crc;              // CRC LSB
     telegram[7] = (crc >> 8);       // CRC MSB
     dir_output->set();
@@ -120,7 +116,7 @@ void Modbus::write_holding_register(int slave_addr, int reg_addr, int data){
     telegram[3] = reg_addr;         // Register address LSB
     telegram[4] = (data >> 8);      // Data MSB
     telegram[5] = data;             // Data LSB
-    crc = crc16(telegram, 6);       
+    crc = crc16(telegram, 6);
     telegram[6] = crc;              // CRC LSB
     telegram[7] = (crc >> 8);       // CRC MSB
     dir_output->set();
@@ -154,7 +150,7 @@ void Modbus::calculate_delay(int baudrate, int bits, int parity, int stop) {
 }
 
 void Modbus::delay(unsigned int value) {
-    
+
     uint32_t start = us_ticker_read(); // mbed call
     while ((us_ticker_read() - start) < value*1000) {
         THEKERNEL->call_event(ON_IDLE, this);
@@ -163,7 +159,7 @@ void Modbus::delay(unsigned int value) {
 }
 
 unsigned int Modbus::crc16(char *data, unsigned int len) {
-    
+
     static const unsigned short crc_table[] = {
     0X0000, 0XC0C1, 0XC181, 0X0140, 0XC301, 0X03C0, 0X0280, 0XC241,
     0XC601, 0X06C0, 0X0780, 0XC741, 0X0500, 0XC5C1, 0XC481, 0X0440,

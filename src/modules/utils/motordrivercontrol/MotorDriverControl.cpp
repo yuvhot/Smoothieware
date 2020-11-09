@@ -129,26 +129,26 @@ bool MotorDriverControl::config_module(uint16_t cs)
 
     // only needed for TMC 2208/2209 now
     DRV->set_chip_type(chip);
-    
+
     //Configure soft UART
     if(DRV->connection_method == StepstickParameters::UART) {
-    		
+
         //select TX and RX pins
         sw_uart_tx_pin = new Pin();
         sw_uart_rx_pin = new Pin();
-        
+
         sw_uart_tx_pin->from_string(THEKERNEL->config->value(motor_driver_control_checksum, cs, sw_uart_tx_pin_checksum)->by_default("nc")->as_string())->as_output();
-        
+
         if(!sw_uart_tx_pin->connected()) {
             printf("MotorDriverControl %c ERROR: uart tx pin not defined\n", axis);
-            return false; 
+            return false;
         }
-        
+
         PinName txd = port_pin((PortName)(sw_uart_tx_pin->port_number), sw_uart_tx_pin->pin);
         PinName rxd = NC;
-        
+
         // Read/Write or Write-only mode?
-        if (THEKERNEL->config->value(motor_driver_control_checksum, cs, sw_uart_rx_pin_checksum)->by_default("nc")->as_string() != "nc" ) {            
+        if (THEKERNEL->config->value(motor_driver_control_checksum, cs, sw_uart_rx_pin_checksum)->by_default("nc")->as_string() != "nc" ) {
             sw_uart_rx_pin->from_string(THEKERNEL->config->value(motor_driver_control_checksum, cs, sw_uart_rx_pin_checksum)->by_default("nc")->as_string())->as_input();
             if(!sw_uart_rx_pin->connected()) {
                 printf("MotorDriverControl %c ERROR: cannot open RX PIN, falling back to writeonly!\n", axis);
@@ -156,7 +156,7 @@ bool MotorDriverControl::config_module(uint16_t cs)
             }else if(!(sw_uart_rx_pin->port_number == 0 || sw_uart_rx_pin->port_number == 2)) {
                 printf("MotorDriverControl %c ERROR: RX PIN needs to be Interrupt enabled pin (Port 0 or 2), falling back to writeonly!\n", axis);
                 write_only = true;
-            } 
+            }
             else {
                 rxd = port_pin((PortName)(sw_uart_rx_pin->port_number), sw_uart_rx_pin->pin);
                 write_only = false;
@@ -176,7 +176,7 @@ bool MotorDriverControl::config_module(uint16_t cs)
         this->serial->baud(sw_uart_baudrate);
     } else if(DRV->connection_method == StepstickParameters::SPI ) {
         //Configure SPI
-    		
+
         //select chip select pin
         spi_cs_pin = new Pin();
         spi_cs_pin->from_string(THEKERNEL->config->value( motor_driver_control_checksum, cs, spi_cs_pin_checksum)->by_default("nc")->as_string())->as_output();
@@ -370,7 +370,7 @@ void MotorDriverControl::on_gcode_received(void *argument)
                 // M911 no args dump status for all drivers, M911.1 P0|A0 dump for specific driver
                 gcode->stream->printf("Motor %d (%c)...\n", id, axis);
                 dump_status(gcode->stream);
-               
+
             }else if( (gcode->has_letter('P') && gcode->get_value('P') == id) || gcode->has_letter(axis)) {
                 if(gcode->subcode == 1) {
                     if (!write_only) {
@@ -460,7 +460,7 @@ void MotorDriverControl::set_raw_register(StreamOutput *stream, uint32_t reg, ui
 void MotorDriverControl::set_options(Gcode *gcode)
 {
     StepperDrv::options_t options= gcode->get_args_int();
-    
+
     if(options.size() > 0) {
         if(DRV->set_options(options)) {
             gcode->stream->printf("options set\n");
