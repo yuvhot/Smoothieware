@@ -37,11 +37,15 @@ class SerialPinConfig;
  */
 class BufferedSoftSerial {
 private:
-    SerialPinConfig* serialPinConfig;
+    SerialPinConfig *serialPinConfig;
     RingBuffer<char, 32> _rxbuf;
     RingBuffer<char, 32> _txbuf;
+
     void prime();
-    std::function<void (const unsigned char)> _emit;
+
+    void byteIn(unsigned char c);
+
+    std::function<void(const unsigned char)> _emit;
 public:
     /** Create a BufferedSoftSerial port, connected to the specified transmit and receive pins
      *  @param tx Transmit pin
@@ -91,7 +95,7 @@ public:
      */
     ssize_t write(const void *s, size_t length);
 
-    void attach(std::function<void (const unsigned char)> &&emit) { _emit = emit; }
+    void attach(std::function<void(const unsigned char)> &&emit) { _emit = emit; }
 
     void baud(int baudrate);
 

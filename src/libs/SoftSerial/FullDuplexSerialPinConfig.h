@@ -17,14 +17,17 @@ public:
             std::function<void()> empty
     ) : SerialPinConfig(emit, empty),
         rx(rxPin),
-        tx(txPin) {}
-
-    bool read_bit() override {
-        return true;
+        tx(txPin) {
+        rx.mode(PinMode::PullUp);
+        tx.write(false);
     }
 
-    void send_bit(bool value) override {
+    bool read_bit() override {
+        return rx.read();
+    }
 
+    void send_bit(bool value, bool last) override {
+        tx.write(value);
     }
 
 private:

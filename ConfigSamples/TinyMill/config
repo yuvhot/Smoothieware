@@ -58,7 +58,7 @@ motor_driver_control.alpha.enable            true             # Enable motor dri
 motor_driver_control.alpha.axis              X                # Axis designator on which the motor driver is set
 motor_driver_control.alpha.chip              TMC2209          # Motor driver chip type
 motor_driver_control.alpha.sw_uart_tx_pin    1.10             # Transmitting line from the board to the alpha. Required.
-# motor_driver_control.alpha.sw_uart_rx_pin    1.10               # Receiving line to the board; NC if not connected (default).
+motor_driver_control.alpha.sw_uart_rx_pin    1.10             # Receiving line to the board; NC if not connected (default).
 motor_driver_control.alpha.sw_uart_baudrate  19200            # Software UART baudrate. Value higher than 50k is not recommended
 motor_driver_control.alpha.current           1200             # Motor currents in mA - PEAK current, multiply with 0.707
                                                               # to get RMS current
@@ -111,6 +111,7 @@ motor_driver_control.beta.enable             true
 motor_driver_control.beta.axis               Y
 motor_driver_control.beta.chip               TMC2209
 motor_driver_control.beta.sw_uart_tx_pin     1.9
+motor_driver_control.beta.sw_uart_rx_pin     1.9
 motor_driver_control.beta.sw_uart_baudrate   19200
 motor_driver_control.beta.current            1200
 motor_driver_control.beta.sense_resistor     110
@@ -128,6 +129,23 @@ gamma_dir_pin                                2.11             # Pin for gamma st
 gamma_en_pin                                 0.21             # Pin for gamma enable
 gamma_current                                1.2              # Z stepper motor current
 gamma_max_rate                               600.0            # Maximum rate in mm/min
+motor_driver_control.gamma.enable            true
+motor_driver_control.gamma.axis              Y
+motor_driver_control.gamma.chip              TMC2209
+motor_driver_control.gamma.sw_uart_tx_pin    1.8
+motor_driver_control.gamma.sw_uart_rx_pin    1.8
+motor_driver_control.gamma.sw_uart_baudrate  19200
+motor_driver_control.gamma.current           1200
+motor_driver_control.gamma.sense_resistor    110
+motor_driver_control.gamma.microsteps        16
+motor_driver_control.gamma.chopper_mode      0
+motor_driver_control.gamma.spreadcycle_toff  4
+motor_driver_control.gamma.spreadcycle_tbl   32
+motor_driver_control.gamma.spreadcycle_hstrt 1
+motor_driver_control.gamma.spreadcycle_hend  2
+motor_driver_control.gamma.stallguard_tcoolthrs 0
+motor_driver_control.gamma.stallguard_thrs   100
+
 
 ## Endstops
 # See http://smoothieware.org/endstops

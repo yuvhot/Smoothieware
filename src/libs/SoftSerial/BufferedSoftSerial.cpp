@@ -31,7 +31,7 @@ BufferedSoftSerial::BufferedSoftSerial(PinName tx, PinName rx, const char *name)
         // Half duplex mode
         serialPinConfig = new HalfDuplexSerialPinConfig(
                 rx,
-                [this](const unsigned char c) { _rxbuf.push_back(c); },
+                [this](const unsigned char c) { this->byteIn(c); },
                 [this]() { this->prime(); }
         );
 
@@ -39,7 +39,7 @@ BufferedSoftSerial::BufferedSoftSerial(PinName tx, PinName rx, const char *name)
         serialPinConfig = new FullDuplexSerialPinConfig(
                 rx,
                 tx,
-                [this](const unsigned char c) { _rxbuf.push_back(c); },
+                [this](const unsigned char c) { this->byteIn(c); },
                 [this]() { this->prime(); }
         );
     }
@@ -121,4 +121,9 @@ void BufferedSoftSerial::prime() {
             serialPinConfig->putc(rv);
         }
     }
+}
+
+void BufferedSoftSerial::byteIn(unsigned char c) {
+    _rxbuf.push_back(c);
+    if (_emit) _emit(c);
 }

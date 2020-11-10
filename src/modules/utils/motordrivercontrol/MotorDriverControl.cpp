@@ -153,9 +153,6 @@ bool MotorDriverControl::config_module(uint16_t cs)
             if(!sw_uart_rx_pin->connected()) {
                 printf("MotorDriverControl %c ERROR: cannot open RX PIN, falling back to writeonly!\n", axis);
                 write_only = true;
-            }else if(!(sw_uart_rx_pin->port_number == 0 || sw_uart_rx_pin->port_number == 2)) {
-                printf("MotorDriverControl %c ERROR: RX PIN needs to be Interrupt enabled pin (Port 0 or 2), falling back to writeonly!\n", axis);
-                write_only = true;
             }
             else {
                 rxd = port_pin((PortName)(sw_uart_rx_pin->port_number), sw_uart_rx_pin->pin);
@@ -252,9 +249,18 @@ bool MotorDriverControl::config_module(uint16_t cs)
 
     //finish driver setup
     if(DRV->connection_method== StepstickParameters::UART) {
-        printf("MotorDriverControl INFO: configured motor %c (%d): as %s, tx: %04X, rx: %04X\n", axis, id, THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string().c_str(), (sw_uart_tx_pin->port_number<<8)|sw_uart_tx_pin->pin, (sw_uart_rx_pin->port_number<<8)|sw_uart_rx_pin->pin);
+        printf("MotorDriverControl INFO: configured motor %c (%d): as %s, tx: %04X, rx: %04X\n",
+               axis,
+               id,
+               THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string().c_str(),
+               (sw_uart_tx_pin->port_number<<8)|sw_uart_tx_pin->pin,
+               (sw_uart_rx_pin->port_number<<8)|sw_uart_rx_pin->pin);
     } else {
-        printf("MotorDriverControl INFO: configured motor %c (%d): as %s, cs: %04X\n", axis, id, THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string().c_str(), (spi_cs_pin->port_number<<8)|spi_cs_pin->pin);
+        printf("MotorDriverControl INFO: configured motor %c (%d): as %s, cs: %04X\n",
+               axis,
+               id,
+               THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string().c_str(),
+               (spi_cs_pin->port_number<<8)|spi_cs_pin->pin);
     }
 
     return true;

@@ -29,7 +29,7 @@ public:
     int putc(unsigned char data) {
         if (tx_bit != -1) return -1;
 
-        send_buffer = data << 1;    // Stop bit
+        send_buffer = data << 1;
 
         bool parity;
         switch (_params->parity) {
@@ -62,12 +62,19 @@ public:
 
         send_buffer |= 0xFFFF << (1 + _params->bits + (bool) _params->parity);
         send_buffer &= ~(1 << _total_bits);
+        tx_bit = 0;
         return 1;
     }
 
-    template<typename T>
-    void next(void(T::*send)(bool), int phase) {
-
+    void next(std::function<void(bool, bool)> send, int phase) {
+        if (tx_bit >= 0 && phase == 0) {
+            send((send_buffer >> tx_bit) & 1, tx_bit == 11);
+            if (tx_bit == 11) {
+                tx_bit = -1;
+            } else {
+                tx_bit++;
+            }
+        }
     }
 };
 

@@ -18,7 +18,7 @@ public:
             serial_bit_writer(&params, empty) {}
 
     void tick(int phase) {
-        serial_bit_writer.next(&SerialPinConfig::send_bit, phase);
+        serial_bit_writer.next([this](bool value, bool last) { send_bit(value, last); }, phase);
         serial_bit_reader.next(read_bit(), phase);
     }
 
@@ -40,7 +40,7 @@ private:
 protected:
     virtual bool read_bit() = 0;
 
-    virtual void send_bit(bool value) = 0;
+    virtual void send_bit(bool value, bool last) = 0;
 };
 
 #endif // SERIALPINCONFIG_H
