@@ -667,7 +667,7 @@ void TMC220X::init(uint16_t cs)
     
     if (chip_type == StepstickParameters::CHIP_TYPE::TMC2209) {
         this->slave_addr= THEKERNEL->config->value(motor_driver_control_checksum, cs, slave_addr_checksum)->by_default(0)->as_int();
-        THEKERNEL->streams->printf("TMC2209 using slave address %d for axis %c\n", this->slave_addr, designator);
+        printf("TMC2209 using slave address %d for axis %c\n", this->slave_addr, designator);
     } // slave_addr defaults to 0, which is OK for TMC2208
 
     // Setting the default register values
@@ -735,17 +735,17 @@ void TMC220X::init(uint16_t cs)
 
     // Set microstepping via software and set external sense resistors using internal reference voltage, uart on, external VREF
     setGeneralConfiguration(1,0,0,1,1,1);
-    THEKERNEL->streams->printf("Setting GCONF to %08lX for axis %c\n", gconf_register_value, designator);
+    printf("Setting GCONF to %08lX for axis %c\n", gconf_register_value, designator);
     
     // from teemuatlut's TMC driver library
     // TODO: read back the value, if it differs then echo error and/or switch to read-only!
     //constexpr static uint8_t TMC2208_n::DRV_STATUS_t::address = 0x6F
     // check for connectivity if not in read-only mode! Read the global register and check crc
     unsigned long gconf_status = readRegister(TMC220X_GCONF_REGISTER);
-    THEKERNEL->streams->printf("GCONF status: %08lX (%lu) [CRC: %d]\n", gconf_status, gconf_status, crc_valid );
+    printf("GCONF status: %08lX (%lu) [CRC: %d]\n", gconf_status, gconf_status, crc_valid );
     
     gconf_status = readRegister(TMC220X_DRV_STATUS_REGISTER);
-    THEKERNEL->streams->printf("DRV status: %08lX (%lu) [CRC: %d]\n", gconf_status, gconf_status, crc_valid );
+    printf("DRV status: %08lX (%lu) [CRC: %d]\n", gconf_status, gconf_status, crc_valid );
 
     // Set a nice microstepping value
     setStepInterpolation(1);
@@ -1299,7 +1299,7 @@ void TMC220X::set_current(uint16_t current)
         transceive220X(TMC220X_WRITE|TMC220X_CHOPCONF_REGISTER,chopconf_register_value);
         transceive220X(TMC220X_WRITE|TMC220X_IHOLD_IRUN_REGISTER,ihold_irun_register_value);
     } else {
-        THEKERNEL->streams->printf("TMC220X not started on %c, cannot set current.\n", designator);
+        printf("TMC220X not started on %c, cannot set current.\n", designator);
     }
 }
 
@@ -1580,10 +1580,10 @@ void TMC220X::dump_status(StreamOutput *stream)
 void TMC220X::get_debug_info(StreamOutput *stream)
 {
     unsigned long gconf_status = readRegister(TMC220X_GCONF_REGISTER);
-    THEKERNEL->streams->printf("GCONF status for %c: %08lX (%lu) \n", designator, gconf_status, gconf_status );
+    printf("GCONF status for %c: %08lX (%lu) \n", designator, gconf_status, gconf_status );
     
     unsigned long drv_status = readRegister(TMC220X_DRV_STATUS_REGISTER);
-    THEKERNEL->streams->printf("DRV status for %c: %08lX (%lu) \n", designator, drv_status, drv_status );
+    printf("DRV status for %c: %08lX (%lu) \n", designator, drv_status, drv_status );
     
 }
 
@@ -1727,7 +1727,7 @@ uint32_t TMC220X::transceive220X(uint8_t reg, uint32_t datagram)
         //write/read the values
         serial(buf, 8, rbuf);
 
-        // THEKERNEL->streams->printf("sent: %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X \n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
+        // printf("sent: %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X \n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
     } else {
         // reading from UART
         uint8_t buf[] {(uint8_t)(TMC220X_SYNC), (uint8_t)(TMC220X_SLAVEADDR), (uint8_t)(reg), (uint8_t)(0x00)};
@@ -1748,13 +1748,13 @@ uint32_t TMC220X::transceive220X(uint8_t reg, uint32_t datagram)
 
         if ( response_crc != rbuf[5] ) {
             crc_valid = false;
-            THEKERNEL->streams->printf("CRC does not match, check RX line! got CRC: %02X calc CRC: %02X \n", response_crc, rbuf[5]);
+            printf("CRC does not match, check RX line! got CRC: %02X calc CRC: %02X \n", response_crc, rbuf[5]);
         } else {
             crc_valid = true;
         }
 
-        // THEKERNEL->streams->printf("got CRC: %02X calc CRC: %02X \n", crc, rbuf[5]);
-        // THEKERNEL->streams->printf("sent: %02X, %02X, %02X, %02X received: %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X \n", buf[0], buf[1], buf[2], buf[3], rbuf[0], rbuf[1], rbuf[2], rbuf[3], rbuf[4], rbuf[5], rbuf[6], rbuf[7], rbuf[8]);
+        // printf("got CRC: %02X calc CRC: %02X \n", crc, rbuf[5]);
+        // printf("sent: %02X, %02X, %02X, %02X received: %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X \n", buf[0], buf[1], buf[2], buf[3], rbuf[0], rbuf[1], rbuf[2], rbuf[3], rbuf[4], rbuf[5], rbuf[6], rbuf[7], rbuf[8]);
     }
     return i_datagram;
 }
