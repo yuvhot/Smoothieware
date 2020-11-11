@@ -15,6 +15,11 @@ public:
         Forced0
     };
 
+    SerialParams(int bits = 8, Parity parity = None, int stop_bits = 1) :
+            bits(bits),
+            parity(parity),
+            stop_bits(stop_bits) {}
+
     int bits;
     Parity parity;
     int stop_bits;

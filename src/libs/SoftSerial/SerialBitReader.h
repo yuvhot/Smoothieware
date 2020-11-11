@@ -10,14 +10,14 @@
 
 class SerialBitReader {
 private:
-    SerialParams *_params;
+    const SerialParams& _params;
     int error_count;
     bool rx_error = false;
     int read_buffer, rx_bit;
     int phase_sync;
     std::function<void(const unsigned char)> _emit;
 public:
-    SerialBitReader(SerialParams *params,
+    SerialBitReader(const SerialParams& params,
                     std::function<void(const unsigned char)> emit) :
             _params(params),
             error_count(0),
@@ -44,7 +44,7 @@ public:
         }
 
         // Shift bits in
-        if (rx_bit < _params->bits) {
+        if (rx_bit < _params.bits) {
             read_buffer |= val << rx_bit;
             rx_bit++;
             return;
@@ -52,9 +52,9 @@ public:
 
         // Receive parity
         bool parity_count;
-        if (rx_bit == _params->bits) {
+        if (rx_bit == _params.bits) {
             rx_bit++;
-            switch (_params->parity) {
+            switch (_params.parity) {
                 case SerialParams::Parity::Forced1:
                     if (val == 0)
                         rx_error = true;
@@ -66,13 +66,13 @@ public:
                 case SerialParams::Parity::Even:
                 case SerialParams::Parity::Odd:
                     parity_count = val;
-                    for (int i = 0; i < _params->bits; i++) {
+                    for (int i = 0; i < _params.bits; i++) {
                         if (((read_buffer >> i) & 0x01) == 1)
                             parity_count = !parity_count;
                     }
-                    if ((parity_count) && (_params->parity == SerialParams::Parity::Even))
+                    if ((parity_count) && (_params.parity == SerialParams::Parity::Even))
                         rx_error = true;
-                    if ((!parity_count) && (_params->parity == SerialParams::Parity::Odd))
+                    if ((!parity_count) && (_params.parity == SerialParams::Parity::Odd))
                         rx_error = true;
                     return;
                 case SerialParams::Parity::None:
@@ -82,7 +82,7 @@ public:
         }
 
         // Receive stop
-        if (rx_bit < _params->bits + (bool) _params->parity + _params->stop_bits) {
+        if (rx_bit < _params.bits + (bool) _params.parity + _params.stop_bits) {
             rx_bit++;
             if (!val)
                 rx_error = true;

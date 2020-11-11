@@ -17,6 +17,7 @@ public:
     ) : SerialPinConfig(emit, empty),
         rxtx(rxtxPin),
         sending(false) {
+        rxtx.write(true);
         rxtx.input();
         rxtx.mode(PinMode::PullUp);
     }
@@ -29,14 +30,18 @@ public:
     }
 
     void send_bit(bool value, bool last) override {
-        if (!last) {
-            sending = true;
+        if (!sending) {
             rxtx.output();
-            rxtx.write(value);
-        } else {
-            rxtx.input();
+            sending = true;
+        }
+
+        if (last) {
+            rxtx.write(true);
             rxtx.mode(PinMode::PullUp);
+            rxtx.input();
             sending = false;
+        } else {
+            rxtx.write(value);
         }
     }
 

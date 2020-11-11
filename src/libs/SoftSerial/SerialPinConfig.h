@@ -14,10 +14,11 @@ class SerialPinConfig {
 public:
     SerialPinConfig(std::function<void(const unsigned char)> emit,
                     std::function<void()> empty) :
-            serial_bit_reader(&params, emit),
-            serial_bit_writer(&params, empty) {}
+            serial_bit_reader(params, emit),
+            serial_bit_writer(params, empty) {}
 
     void tick(int phase) {
+        // send_bit(phase == 1, phase == 0); // Test pattern
         serial_bit_writer.next([this](bool value, bool last) { send_bit(value, last); }, phase);
         serial_bit_reader.next(read_bit(), phase);
     }

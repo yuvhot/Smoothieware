@@ -72,7 +72,7 @@ ifeq "$(EXCLUDE_MODULES)" ""
 
 ifeq "$(CNC)" "1"
 # CNC build excludes these
-export EXCLUDE_MODULES = tools/filamentdetector tools/scaracal tools/temperaturecontrol tools/temperatureswitch tools/extruder
+export EXCLUDE_MODULES = tools/filamentdetector tools/scaracal tools/temperaturecontrol tools/temperatureswitch tools/extruder tools/laser utils/panel
 else
 # 3D build excludes these
 export EXCLUDE_MODULES = tools/drillingcycles tools/spindle
