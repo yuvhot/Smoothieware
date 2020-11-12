@@ -31,7 +31,7 @@ public:
     void next(bool val, int phase) {
         // Wait for start bit
         if (rx_bit < 0) {
-            if (val) {
+            if (!val) {
                 phase_sync = phase;
                 rx_bit = 0;
             }
@@ -92,8 +92,7 @@ public:
         // The last stop bit
         if (!val)
             rx_error = true;
-
-        if (!rx_error && _emit) {
+        if (!rx_error) {
             _emit(read_buffer & 0xFF);
         } else {
             error_count++;

@@ -130,7 +130,7 @@ gamma_en_pin                                 0.21             # Pin for gamma en
 gamma_current                                1.2              # Z stepper motor current
 gamma_max_rate                               2000.0           # Maximum rate in mm/min
 motor_driver_control.gamma.enable            true
-motor_driver_control.gamma.axis              Y
+motor_driver_control.gamma.axis              Z
 motor_driver_control.gamma.chip              TMC2209
 motor_driver_control.gamma.sw_uart_tx_pin    1.8
 motor_driver_control.gamma.sw_uart_rx_pin    1.8

@@ -1,0 +1,15 @@
+# UDEV Rules for Smoothie boards
+#
+# This will allow reflashing with DFU-util without using sudo
+#
+# This file must be placed at:
+#
+# /etc/udev/rules.d/49-smoothie.rules    (preferred location)
+#
+# To install, type this command in a terminal:
+#   sudo cp 49-smoothie.rules /etc/udev/rules.d/49-smoothie.rules
+#
+# After this file is installed, physically unplug and reconnect the
+# device.
+#
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="6015", GROUP="plugdev", MODE="0666"

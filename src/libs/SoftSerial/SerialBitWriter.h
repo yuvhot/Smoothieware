@@ -64,7 +64,7 @@ public:
         _total_bits = _params.bits + _params.stop_bits + parity_bits + start_bits;
         _send_buffer |= 0xFFFF << (start_bits + _params.bits + parity_bits); // Add stop bits as needed
         _send_buffer &= ~(1 << _total_bits);
-        printf("TX: %02X %04X:%d\n", data, _send_buffer & 0xFFFF, _total_bits);
+        // printf("TX: %02X %04X:%d\n", data, _send_buffer & 0xFFFF, _total_bits); // Debugging
         _tx_bit = 0;
         return 1;
     }

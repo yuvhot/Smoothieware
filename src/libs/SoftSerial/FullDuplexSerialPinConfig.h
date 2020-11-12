@@ -19,7 +19,7 @@ public:
         rx(rxPin),
         tx(txPin) {
         rx.mode(PinMode::PullUp);
-        tx.write(false);
+        tx.write(true);
     }
 
     bool read_bit() override {
@@ -27,7 +27,7 @@ public:
     }
 
     void send_bit(bool value, bool last) override {
-        tx.write(value);
+        tx.write(value || last);
     }
 
 private:

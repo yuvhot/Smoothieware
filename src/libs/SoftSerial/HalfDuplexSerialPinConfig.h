@@ -15,39 +15,20 @@ public:
             std::function<void(const unsigned char)> emit,
             std::function<void()> empty
     ) : SerialPinConfig(emit, empty),
-        rxtx(rxtxPin),
-        sending(false) {
-        rxtx.write(true);
-        rxtx.input();
+        rxtx(rxtxPin) {
         rxtx.mode(PinMode::PullUp);
     }
 
     bool read_bit() override {
-        if (sending) {
-            return false;
-        }
         return rxtx.read();
     }
 
     void send_bit(bool value, bool last) override {
-        if (!sending) {
-            rxtx.output();
-            sending = true;
-        }
-
-        if (last) {
-            rxtx.write(true);
-            rxtx.mode(PinMode::PullUp);
-            rxtx.input();
-            sending = false;
-        } else {
-            rxtx.write(value);
-        }
+        rxtx.mode((value || last) ? PinMode::PullUp : PinMode::PullDown);
     }
 
 private:
-    DigitalInOut rxtx;
-    bool sending;
+    DigitalIn rxtx;
 };
 
 #endif // HALFDUPLEXSERIALPINCONFIG_H

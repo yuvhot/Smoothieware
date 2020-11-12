@@ -64,6 +64,9 @@ int BufferedSoftSerial::writeable(void) {
 }
 
 int BufferedSoftSerial::getc(void) {
+    if (!readable()) {
+        return -1;
+    }
     char retval;
     _rxbuf.pop_front(retval);
     return (int) retval;
