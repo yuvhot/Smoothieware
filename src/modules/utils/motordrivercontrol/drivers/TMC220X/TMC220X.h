@@ -227,7 +227,7 @@ public:
      * \brief reads out the current Stallguard threashold.
      *
      */
-    uint8_t getStallguardResult(void);
+    int getStallguardResult(void);
 
     /*!
      * \brief Stall detection threshold
@@ -355,7 +355,7 @@ public:
      * \param reg_addr any valid register address
      * \sa TMC220X_[GCONF|GSTAT|IOIN|TSTEP|SG_RESULT|MSCNT|CHOPCONF|DRV_STATUS]_REGISTER
      */
-    unsigned long readRegister(int8_t reg_addr);
+    unsigned long readRegister(int8_t reg_addr, bool *crc_valid = 0);
 
     /*!
      * \brief Manually read out the status register
@@ -388,13 +388,12 @@ public:
     bool set_options(const options_t& options);
     
     void set_write_only(bool wo);
-    //uint8_t calcCRC(uint8_t *buf, uint8_t len);
-    uint8_t calc_crc(uint8_t *buf, uint8_t len);
 private:
+    uint8_t calc_crc(const uint8_t *buf, uint8_t len);
     bool check_error_status_bits(StreamOutput *stream);
 
     // UART sender
-    inline uint32_t transceive220X(uint8_t reg, uint32_t datagram = 0x00000000);
+    inline uint32_t transceive220X(uint8_t reg, uint32_t datagram = 0x00000000, bool *crc_valid = 0);
     std::function<int(uint8_t *b, int cnt, uint8_t *r)> serial;
 
     unsigned int resistor{50}; // current sense resistor value in milliohm
@@ -427,11 +426,6 @@ private:
     };
 
     char designator;
-
-    // to store response CRC before validating
-    uint8_t response_crc;
-    bool crc_valid = false;
-    
     bool write_only = false;
     
     // slave address for TMC2209

@@ -66,22 +66,22 @@ motor_driver_control.alpha.sense_resistor    110              # Sensing resistor
 motor_driver_control.alpha.microsteps        16               # The actual microstep resolution (MRES) that will
                                                               # be extrapolated to 256 microsteps.
                                                                  # It can be 1, 2, 4, 8, 16, 32, 64, 128 or 256 microsteps
-motor_driver_control.alpha.chopper_mode      0                # 0 = spreadCycle ; 1 = stealthChop
+motor_driver_control.alpha.chopper_mode      1                # 0 = spreadCycle ; 1 = stealthChop
 
 # Stealthchop
 # ! Please see datasheet for more details
-#motor_driver_control.alpha.stealthchop_tpwmthrs        0           # The upper velocity for stealthChop voltage PWM mode.
+motor_driver_control.alpha.stealthchop_tpwmthrs        0           # The upper velocity for stealthChop voltage PWM mode.
                                                                     # When the velocity exceeds this value, the
                                                                     # driver switches to spreadCycle. Default 0 (disabled).
                                                                     # If enabled you probably should also tune SpreadCycle
-#motor_driver_control.alpha.stealthchop_pwm_lim         12          # PWM_LIM
-#motor_driver_control.alpha.stealthchop_pwm_reg         1           # PWM_REG
-#motor_driver_control.alpha.stealthchop_freewheel       0           # freewheel
-#motor_driver_control.alpha.stealthchop_pwm_autograd    1           # PWM_AUTOGRAD
-#motor_driver_control.alpha.stealthchop_pwm_autoscale   1           # PWM_AUTOSCALE
-#motor_driver_control.alpha.stealthchop_pwm_freq        1           # PWM_FREQ
-#motor_driver_control.alpha.stealthchop_pwm_grad        0           # PWM_GRAD
-#motor_driver_control.alpha.stealthchop_pwm_ofs         36          # PWM_OFS
+motor_driver_control.alpha.stealthchop_pwm_lim         12          # PWM_LIM
+motor_driver_control.alpha.stealthchop_pwm_reg         1           # PWM_REG
+motor_driver_control.alpha.stealthchop_freewheel       0           # freewheel
+motor_driver_control.alpha.stealthchop_pwm_autograd    1           # PWM_AUTOGRAD
+motor_driver_control.alpha.stealthchop_pwm_autoscale   1           # PWM_AUTOSCALE
+motor_driver_control.alpha.stealthchop_pwm_freq        1           # PWM_FREQ
+motor_driver_control.alpha.stealthchop_pwm_grad        0           # PWM_GRAD
+motor_driver_control.alpha.stealthchop_pwm_ofs         36          # PWM_OFS
 
 # SpreadCycle
 # ! Please see datasheet for more details
@@ -92,15 +92,15 @@ motor_driver_control.alpha.spreadcycle_hstrt          1           # HSTART (1 - 
 motor_driver_control.alpha.spreadcycle_hend           2           # HEND   (-3 - 12)
 
 # Stallguard & Coolconf
-motor_driver_control.alpha.stallguard_tcoolthrs		  0	          # Lower coolstep velocity treshold
-motor_driver_control.alpha.stallguard_thrs			  100	      # SG_RESULT <= SGTHRS*2
+motor_driver_control.alpha.stallguard_tcoolthrs		  1048575           # Lower coolstep velocity treshold
+motor_driver_control.alpha.stallguard_thrs			  80          # SG_RESULT <= SGTHRS*2
 
-#motor_driver_control.alpha.coolconf_seimin			  0			  # 0 = 1/2 current setting (IRUN) - use with IRUN >= 10!
+motor_driver_control.alpha.coolconf_seimin			  0			  # 0 = 1/2 current setting (IRUN) - use with IRUN >= 10!
                                                                   # 1 = 1/4 current setting (IRUN) - use with IRUN >= 20!
-#motor_driver_control.alpha.coolconf_sedn		      0			  # 0/2/8/32
-#motor_driver_control.alpha.coolconf_semax			  0			  # 0-15
-#motor_driver_control.alpha.coolconf_seup		      0			  # 1,2,4,8 - current increment steps per measured SG value
-#motor_driver_control.alpha.coolconf_semin			  0			  # 0: CoolStep off, 1-15
+motor_driver_control.alpha.coolconf_sedn		      1			  # 0/2/8/32
+motor_driver_control.alpha.coolconf_semax			  2			  # 0-15
+motor_driver_control.alpha.coolconf_seup		      0			  # 1,2,4,8 - current increment steps per measured SG value
+motor_driver_control.alpha.coolconf_semin			  5			  # 0: CoolStep off, 1-15
 
 beta_step_pin                                0.19             # Pin for beta stepper step signal
 beta_dir_pin                                 0.20             # Pin for beta stepper direction, add '!' to reverse direction
@@ -116,16 +116,31 @@ motor_driver_control.beta.sw_uart_baudrate   19200
 motor_driver_control.beta.current            1200
 motor_driver_control.beta.sense_resistor     110
 motor_driver_control.beta.microsteps         16
-motor_driver_control.beta.chopper_mode       0
+motor_driver_control.beta.chopper_mode       1
+motor_driver_control.beta.stealthchop_tpwmthrs        0
+motor_driver_control.beta.stealthchop_pwm_lim         12
+motor_driver_control.beta.stealthchop_pwm_reg         1
+motor_driver_control.beta.stealthchop_freewheel       0
+motor_driver_control.beta.stealthchop_pwm_autograd    1
+motor_driver_control.beta.stealthchop_pwm_autoscale   1
+motor_driver_control.beta.stealthchop_pwm_freq        1
+motor_driver_control.beta.stealthchop_pwm_grad        0
+motor_driver_control.beta.stealthchop_pwm_ofs         36
 motor_driver_control.beta.spreadcycle_toff   4
 motor_driver_control.beta.spreadcycle_tbl    32
 motor_driver_control.beta.spreadcycle_hstrt  1
 motor_driver_control.beta.spreadcycle_hend   2
-motor_driver_control.beta.stallguard_tcoolthrs 0
-motor_driver_control.beta.stallguard_thrs    100
+motor_driver_control.beta.stallguard_tcoolthrs 1048575
+motor_driver_control.beta.stallguard_thrs   60
+motor_driver_control.beta.coolconf_seimin   0
+motor_driver_control.beta.coolconf_sedn	    1
+motor_driver_control.beta.coolconf_semax	2
+motor_driver_control.beta.coolconf_seup		0
+motor_driver_control.beta.coolconf_semin	5
+
 
 gamma_step_pin                               0.22             # Pin for gamma stepper step signal
-gamma_dir_pin                                2.11             # Pin for gamma stepper direction, add '!' to reverse direction
+gamma_dir_pin                                2.11!            # Pin for gamma stepper direction, add '!' to reverse direction
 gamma_en_pin                                 0.21             # Pin for gamma enable
 gamma_current                                1.2              # Z stepper motor current
 gamma_max_rate                               2000.0           # Maximum rate in mm/min
@@ -138,28 +153,43 @@ motor_driver_control.gamma.sw_uart_baudrate  19200
 motor_driver_control.gamma.current           1200
 motor_driver_control.gamma.sense_resistor    110
 motor_driver_control.gamma.microsteps        16
-motor_driver_control.gamma.chopper_mode      0
+motor_driver_control.gamma.chopper_mode      1
+motor_driver_control.gamma.stealthchop_tpwmthrs        0
+motor_driver_control.gamma.stealthchop_pwm_lim         12
+motor_driver_control.gamma.stealthchop_pwm_reg         1
+motor_driver_control.gamma.stealthchop_freewheel       0
+motor_driver_control.gamma.stealthchop_pwm_autograd    1
+motor_driver_control.gamma.stealthchop_pwm_autoscale   1
+motor_driver_control.gamma.stealthchop_pwm_freq        1
+motor_driver_control.gamma.stealthchop_pwm_grad        0
+motor_driver_control.gamma.stealthchop_pwm_ofs         36
 motor_driver_control.gamma.spreadcycle_toff  4
 motor_driver_control.gamma.spreadcycle_tbl   32
 motor_driver_control.gamma.spreadcycle_hstrt 1
 motor_driver_control.gamma.spreadcycle_hend  2
-motor_driver_control.gamma.stallguard_tcoolthrs 0
-motor_driver_control.gamma.stallguard_thrs   100
+motor_driver_control.gamma.stallguard_tcoolthrs 1048575
+motor_driver_control.gamma.stallguard_thrs   60
+motor_driver_control.gamma.coolconf_seimin   0
+motor_driver_control.gamma.coolconf_sedn	 1
+motor_driver_control.gamma.coolconf_semax	 2
+motor_driver_control.gamma.coolconf_seup	 0
+motor_driver_control.gamma.coolconf_semin	 5
+
 
 
 ## Endstops
 # See http://smoothieware.org/endstops
 endstops_enable                              true             # The endstop module is enabled by default and can be disabled here
-alpha_min_endstop                            1.29             # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
+alpha_min_endstop                            1.29^            # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
 alpha_homing_direction                       home_to_min      # Or set to home_to_max and set alpha_max and uncomment the alpha_max_endstop
 alpha_min                                    0                # This gets loaded as the current position after homing when home_to_min is set
 alpha_max                                    200              # This gets loaded as the current position after homing when home_to_max is set
-beta_min_endstop                             1.28             # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
+beta_min_endstop                             1.28^            # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
 beta_homing_direction                        home_to_min      # Or set to home_to_max and set alpha_max and uncomment the alpha_max_endstop
 beta_min                                     -170             # This gets loaded as the current position after homing when home_to_min is set
 beta_max                                     0                # This gets loaded as the current position after homing when home_to_max is set
-gamma_min_endstop                            1.27             # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
-gamma_homing_direction                       home_to_min      # Or set to home_to_max and set alpha_max and uncomment the alpha_max_endstop
+gamma_max_endstop                            1.27^            # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
+gamma_homing_direction                       home_to_max      # Or set to home_to_max and set alpha_max and uncomment the alpha_max_endstop
 gamma_min                                    -57              # This gets loaded as the current position after homing when home_to_min is set
 gamma_max                                    0                # This gets loaded as the current position after homing when home_to_max is set
 
@@ -168,21 +198,21 @@ beta_max_travel                              170              # Max travel in mm
 gamma_max_travel                             57               # Max travel in mm for gamma/Z axis when homing
 
 # Optional enable limit switches, actions will stop if any enabled limit switch is triggered
-#alpha_limit_enable                          false            # Set to true to enable X min and max limit switches
-#beta_limit_enable                           false            # Set to true to enable Y min and max limit switches
-#gamma_limit_enable                          false            # Set to true to enable Z min and max limit switches
+#alpha_limit_enable                          true             # Set to true to enable X min and max limit switches
+#beta_limit_enable                           true             # Set to true to enable Y min and max limit switches
+#gamma_limit_enable                          true             # Set to true to enable Z min and max limit switches
 
 # Endstops home at their fast feedrate first, then once the endstop is found they home again at their slow feedrate for accuracy
-alpha_fast_homing_rate_mm_s                  50               # Alpha/X fast homing feedrate in mm/second
-alpha_slow_homing_rate_mm_s                  25               # Alpha/X slow homing feedrate in mm/second
-beta_fast_homing_rate_mm_s                   50               # Beta/Y  fast homing feedrate in mm/second
-beta_slow_homing_rate_mm_s                   25               # Beta/Y  slow homing feedrate in mm/second
-gamma_fast_homing_rate_mm_s                  4                # Gamma/Z fast homing feedrate in mm/second
+alpha_fast_homing_rate_mm_s                  10               # Alpha/X fast homing feedrate in mm/second
+alpha_slow_homing_rate_mm_s                  2                # Alpha/X slow homing feedrate in mm/second
+beta_fast_homing_rate_mm_s                   10               # Beta/Y  fast homing feedrate in mm/second
+beta_slow_homing_rate_mm_s                   2                # Beta/Y  slow homing feedrate in mm/second
+gamma_fast_homing_rate_mm_s                  10               # Gamma/Z fast homing feedrate in mm/second
 gamma_slow_homing_rate_mm_s                  2                # Gamma/Z slow homing feedrate in mm/second
 
-alpha_homing_retract_mm                      5                # Distance to retract from the endstop after it is hit for alpha/X
-beta_homing_retract_mm                       5                # Distance to retract from the endstop after it is hit for beta/Y
-gamma_homing_retract_mm                      1                # Distance to retract from the endstop after it is hit for gamma/Z
+alpha_homing_retract_mm                      0.1                # Distance to retract from the endstop after it is hit for alpha/X
+beta_homing_retract_mm                       0.1                # Distance to retract from the endstop after it is hit for beta/Y
+gamma_homing_retract_mm                      0.1                # Distance to retract from the endstop after it is hit for gamma/Z
 
 # Optional order in which axis will home, default is they all home at the same time,
 # If this is set it will force each axis to home one at a time in the specified order

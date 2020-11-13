@@ -72,6 +72,10 @@ int BufferedSoftSerial::getc(void) {
     return (int) retval;
 }
 
+void BufferedSoftSerial::flush() {
+    while(getc() != -1);
+}
+
 int BufferedSoftSerial::putc(int c) {
     _txbuf.push_back((char) c);
     BufferedSoftSerial::prime();

@@ -473,8 +473,8 @@
 #define TMC220X_CHOPCONF_INTPOL                (1 << 28)           //interpolation to 256 microsteps
                                                            //1: The actual microstep resolution (MRES) becomes extrapolated to 256 microsteps for smoothest motor operation.
                                                            //Default: 1
-#define TMC220X_CHOPCONF_MRES                  (15 << 24)          //micro step resolution
 #define TMC220X_CHOPCONF_MRES_SHIFT            24                  //
+#define TMC220X_CHOPCONF_MRES                  (15 << TMC220X_CHOPCONF_MRES_SHIFT)          //micro step resolution
                                                            //%0000: Native 256 microstep setting
                                                            //%0001 ... %1000: 128, 64, 32, 16, 8, 4, 2, FULLSTEP
                                                            //Reduced microstep resolution.
@@ -715,23 +715,6 @@ void TMC220X::init(uint16_t cs)
     } else {
         setSpreadCycleEnabled(true);
     }
-    
-    // TMC2209 specific config
-    if (chip_type == StepstickParameters::CHIP_TYPE::TMC2209) {
-        
-        uint8_t tcoolthrs   = THEKERNEL->config->value(motor_driver_control_checksum, cs, stallguard_tcoolthrs_checksum)->by_default(0)->as_int();
-        setCoolThreshold(tcoolthrs);
-        
-        uint8_t sgthrs      = THEKERNEL->config->value(motor_driver_control_checksum, cs, stallguard_sgthrs_checksum)->by_default(0)->as_int();
-        setStallguardThreshold(sgthrs);
-        
-        bool seimin         = THEKERNEL->config->value(motor_driver_control_checksum, cs, coolconf_seimin_checksum)->by_default(false)->as_bool();
-        uint8_t sedn        = THEKERNEL->config->value(motor_driver_control_checksum, cs, coolconf_sedn_checksum)->by_default(0)->as_int();
-        uint8_t semax       = THEKERNEL->config->value(motor_driver_control_checksum, cs, coolconf_semax_checksum)->by_default(0)->as_int();
-        uint8_t seup        = THEKERNEL->config->value(motor_driver_control_checksum, cs, coolconf_seup_checksum)->by_default(0)->as_int();
-        uint8_t semin       = THEKERNEL->config->value(motor_driver_control_checksum, cs, coolconf_semin_checksum)->by_default(0)->as_int();
-        setCoolConf(seimin, sedn, semax, seup, semin);
-    }
 
     // Set microstepping via software and set external sense resistors using internal reference voltage, uart on, external VREF
     setGeneralConfiguration(1,0,0,1,1,1);
@@ -741,10 +724,11 @@ void TMC220X::init(uint16_t cs)
     // TODO: read back the value, if it differs then echo error and/or switch to read-only!
     //constexpr static uint8_t TMC2208_n::DRV_STATUS_t::address = 0x6F
     // check for connectivity if not in read-only mode! Read the global register and check crc
-    unsigned long gconf_status = readRegister(TMC220X_GCONF_REGISTER);
+    bool crc_valid = false;
+    unsigned long gconf_status = readRegister(TMC220X_GCONF_REGISTER &crc_valid);
     printf("GCONF status: %08lX (%lu) [CRC: %d]\n", gconf_status, gconf_status, crc_valid );
     
-    gconf_status = readRegister(TMC220X_DRV_STATUS_REGISTER);
+    gconf_status = readRegister(TMC220X_DRV_STATUS_REGISTER, &crc_valid);
     printf("DRV status: %08lX (%lu) [CRC: %d]\n", gconf_status, gconf_status, crc_valid );
 
     // Set a nice microstepping value
@@ -763,6 +747,23 @@ void TMC220X::init(uint16_t cs)
 
     //started
     started = true;
+
+    // TMC2209 specific config
+    if (chip_type == StepstickParameters::CHIP_TYPE::TMC2209) {
+
+        int tcoolthrs   = THEKERNEL->config->value(motor_driver_control_checksum, cs, stallguard_tcoolthrs_checksum)->by_default(0)->as_int();
+        setCoolThreshold(tcoolthrs);
+
+        uint8_t sgthrs      = THEKERNEL->config->value(motor_driver_control_checksum, cs, stallguard_sgthrs_checksum)->by_default(0)->as_int();
+        setStallguardThreshold(sgthrs);
+
+        bool seimin         = THEKERNEL->config->value(motor_driver_control_checksum, cs, coolconf_seimin_checksum)->by_default(false)->as_bool();
+        uint8_t sedn        = THEKERNEL->config->value(motor_driver_control_checksum, cs, coolconf_sedn_checksum)->by_default(0)->as_int();
+        uint8_t semax       = THEKERNEL->config->value(motor_driver_control_checksum, cs, coolconf_semax_checksum)->by_default(0)->as_int();
+        uint8_t seup        = THEKERNEL->config->value(motor_driver_control_checksum, cs, coolconf_seup_checksum)->by_default(0)->as_int();
+        uint8_t semin       = THEKERNEL->config->value(motor_driver_control_checksum, cs, coolconf_semin_checksum)->by_default(0)->as_int();
+        setCoolConf(seimin, sedn, semax, seup, semin);
+    }
 }
 
 void TMC220X::setGeneralConfiguration(bool i_scale_analog, bool internal_rsense, bool shaft, bool pdn_disable, bool mstep_reg_select, bool multistep_filt)
@@ -776,7 +777,7 @@ void TMC220X::setGeneralConfiguration(bool i_scale_analog, bool internal_rsense,
     }
 
     if (internal_rsense) {
-        //use internal sense resistors
+        //use internal sense s
         gconf_register_value |= TMC220X_GCONF_INTERNAL_RSENSE;
     } else {
         //use external sense resistors
@@ -1186,11 +1187,11 @@ void TMC220X::setStallguardThreshold(uint32_t threshold)
 
     //if started we directly send it to the motor
     if (started && chip_type == StepstickParameters::CHIP_TYPE::TMC2209) {
-        transceive220X(TMC220X_WRITE|TMC220X_TCOOLTHRS_REGISTER,tcoolthrs_register_value);
+        transceive220X(TMC220X_WRITE|TMC220X_SGTHRS_REGISTER, sgthrs_register_value);
     }
 }
 
-uint8_t TMC220X::getStallguardResult(void)
+int TMC220X::getStallguardResult(void)
 {
     //if we don't yet started there cannot be a current value
     if (!started || chip_type != StepstickParameters::CHIP_TYPE::TMC2209) {
@@ -1198,9 +1199,9 @@ uint8_t TMC220X::getStallguardResult(void)
     }
     // Bits 9 and 0 will always show 0. 
     // Scaling to 10 bit is for compatibility to StallGuard2.
-    unsigned long result = readRegister(TMC220X_SG_RESULT_REGISTER);
+    unsigned long result = readRegister(TMC220X_SG_RESULT_REGISTER) & 0x3FF;
 
-    return (uint8_t)result;
+    return result;
 }
 
 void TMC220X::setCoolConf(bool seimin, uint8_t sedn, uint16_t semax, uint8_t seup, uint16_t semin)
@@ -1346,11 +1347,7 @@ unsigned int TMC220X::getCurrentCSReading(void)
 
 bool TMC220X::isCurrentScalingHalfed()
 {
-    if (this->chopconf_register_value & TMC220X_CHOPCONF_VSENSE) {
-        return true;
-    } else {
-        return false;
-    }
+    return (this->chopconf_register_value & TMC220X_CHOPCONF_VSENSE);
 }
 
 /*
@@ -1445,24 +1442,13 @@ void TMC220X::set_enable(bool enabled)
 
 bool TMC220X::isEnabled()
 {
-    if (chopconf_register_value & TMC220X_CHOPCONF_TOFF) {
-        return true;
-    } else {
-        return false;
-    }
+    return (chopconf_register_value & TMC220X_CHOPCONF_TOFF);
 }
 
 //reads a value from the TMC220X status register.
-unsigned long TMC220X::readRegister(int8_t reg_addr)
+unsigned long TMC220X::readRegister(int8_t reg_addr, bool *crc_valid)
 {
-    uint32_t data;
-    uint8_t reg;
-    
-    reg = TMC220X_READ|reg_addr;
-    
-    data = transceive220X(reg);
-
-    return data;
+    return transceive220X(TMC220X_READ | reg_addr, 0x0, crc_valid);
 }
 
 /*
@@ -1504,21 +1490,24 @@ void TMC220X::dump_status(StreamOutput *stream)
 
         check_error_status_bits(stream);
 
-        // TODO: read data from the chip, rather than using the local stuff
         stream->printf("Register dump [L=from uC memory]:\n");
-        stream->printf(" gconf register: %08lX (%ld) %08lX\n", gconf_register_value, gconf_register_value, readRegister(TMC220X_GCONF_REGISTER));
-        stream->printf(" slaveconf register: %08lX (%ld)\n", slaveconf_register_value, slaveconf_register_value);
-        stream->printf(" ihold_irun register: %08lX (%ld)\n", ihold_irun_register_value, ihold_irun_register_value);
-        stream->printf(" tpowerdown register: %08lX (%ld)\n", tpowerdown_register_value, tpowerdown_register_value);
-        stream->printf(" tpwmthrs register: %08lX (%ld)\n", tpwmthrs_register_value, tpwmthrs_register_value);
-        stream->printf(" chopconf register: %08lX (%ld)\n", chopconf_register_value, chopconf_register_value);
-        stream->printf(" pwmconf register: %08lX (%ld)\n", pwmconf_register_value, pwmconf_register_value);
+        bool crc_valid = false;
+        gconf_register_value = readRegister(TMC220X_GCONF_REGISTER, &crc_valid);
+        stream->printf(" gconf register: %08lX (%ld) CRC:%d\n", gconf_register_value, gconf_register_value, crc_valid);
+        stream->printf(" slaveconf register [L]: %08lX (%ld)\n", slaveconf_register_value, slaveconf_register_value);
+        stream->printf(" ihold_irun register [L]: %08lX (%ld)\n", ihold_irun_register_value, ihold_irun_register_value);
+        stream->printf(" tpowerdown register [L]: %08lX (%ld)\n", tpowerdown_register_value, tpowerdown_register_value);
+        stream->printf(" tpwmthrs register [L]: %08lX (%ld)\n", tpwmthrs_register_value, tpwmthrs_register_value);
+        chopconf_register_value = readRegister(TMC220X_CHOPCONF_REGISTER, &crc_valid);
+        stream->printf(" chopconf register: %08lX (%ld) CRC:%d\n", chopconf_register_value, chopconf_register_value, crc_valid);
+        pwmconf_register_value = readRegister(TMC220X_PWMCONF_REGISTER, &crc_valid);
+        stream->printf(" pwmconf register: %08lX (%ld) CRC:%d\n", pwmconf_register_value, pwmconf_register_value, crc_valid);
         if (chip_type == StepstickParameters::CHIP_TYPE::TMC2209) {
             unsigned long result= getStallguardResult();
             stream->printf(" stallguard result: %10lX (%ld)\n", result, result);
             stream->printf(" tcoolthrs register [L]: %08lX (%ld)\n", tcoolthrs_register_value, tcoolthrs_register_value);
             stream->printf(" sgthrs register [L]: %08X (%d)\n", sgthrs_register_value, sgthrs_register_value);
-            stream->printf(" coolconf register: %08lX (%ld)\n", coolconf_register_value, coolconf_register_value);
+            stream->printf(" coolconf register [L]: %08lX (%ld)\n", coolconf_register_value, coolconf_register_value);
         }
         // I really don't see any point having this
         // stream->printf(" motor_driver_control.xxx.reg %05lX,%05lX,%05lX,%05lX,%05lX,%05lX,%05lX\n", gconf_register_value, slaveconf_register_value, ihold_irun_register_value,
@@ -1690,71 +1679,59 @@ bool TMC220X::set_raw_register(StreamOutput *stream, uint32_t reg, uint32_t val)
 }
 
 /*
-uint8_t TMC220X::calcCRC(uint8_t *buf, uint8_t len) {
-    uint8_t crc = 0;
-	for (uint8_t i = 0; i < len; i++) {
-		uint8_t currentByte = buf[i];
-		for (uint8_t j = 0; j < 8; j++) {
-			if ((crc >> 7) ^ (currentByte & 0x01)) {
-				crc = (crc << 1) ^ 0x07;
-			} else {
-				crc = (crc << 1);
-			}
-			crc &= 0xff;
-			currentByte = currentByte >> 1;
-		}
-	}
-	return crc;
-}
-*/
-
-/*
  * send register settings to the stepper driver via UART
  * send 64 bits for write request and 32 bit for read request
  * receive 64 bits only for read request
  * returns received data content
  */
-uint32_t TMC220X::transceive220X(uint8_t reg, uint32_t datagram)
+uint32_t TMC220X::transceive220X(uint8_t reg, uint32_t datagram, bool *crc_valid)
 {
     uint8_t rbuf[9]; // 8 + 1 crc
     uint32_t i_datagram = 0;
-    if(reg & TMC220X_WRITE) {
-        uint8_t buf[] {(uint8_t)(TMC220X_SYNC), slave_addr, (uint8_t)(reg), (uint8_t)(datagram >> 24), (uint8_t)(datagram >> 16), (uint8_t)(datagram >> 8), (uint8_t)(datagram >> 0), (uint8_t)(0x00)};
+    const int MAX_ATTEMPTS = 3;
+    int attempt = 0;
+    while(attempt < MAX_ATTEMPTS) {
+        attempt++;
+        if (reg & TMC220X_WRITE) {
+            uint8_t buf[]{(uint8_t)(TMC220X_SYNC), slave_addr, (uint8_t)(reg), (uint8_t)(datagram >> 24),
+                          (uint8_t)(datagram >> 16), (uint8_t)(datagram >> 8), (uint8_t)(datagram >> 0),
+                          (uint8_t)(0x00)};
 
-        //calculate checksum
-        calc_crc(buf, 8);
+            //calculate checksum
+            buf[7] = calc_crc(buf, 7);
 
-        //write/read the values
-        serial(buf, 8, rbuf);
+            //write/read the values
+            if (serial(buf, 8, rbuf) < 0) {
+                continue;
+            }
 
-        // printf("sent: %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X \n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
-    } else {
-        // reading from UART
-        uint8_t buf[] {(uint8_t)(TMC220X_SYNC), (uint8_t)(TMC220X_SLAVEADDR), (uint8_t)(reg), (uint8_t)(0x00)};
-
-        //calculate checksum
-        calc_crc(buf, 4);
-
-        //write/read the values
-        serial(buf, 4, rbuf);
-        
-        // save response CRC
-        response_crc = rbuf[5];
-        
-        calc_crc(rbuf,4);
-        
-        //construct reply
-        i_datagram = ((rbuf[3] << 24) | (rbuf[4] << 16) | (rbuf[5] << 8) | (rbuf[6] << 0));
-
-        if ( response_crc != rbuf[5] ) {
-            crc_valid = false;
-            printf("CRC does not match, check RX line! got CRC: %02X calc CRC: %02X \n", response_crc, rbuf[5]);
+            // printf("sent: %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X \n", buf[0], buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7]);
         } else {
-            crc_valid = true;
-        }
+            // reading from UART
+            uint8_t buf[]{(uint8_t)(TMC220X_SYNC), (uint8_t)(TMC220X_SLAVEADDR), (uint8_t)(reg), (uint8_t)(0x00)};
 
-        // printf("got CRC: %02X calc CRC: %02X \n", crc, rbuf[5]);
-        // printf("sent: %02X, %02X, %02X, %02X received: %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X \n", buf[0], buf[1], buf[2], buf[3], rbuf[0], rbuf[1], rbuf[2], rbuf[3], rbuf[4], rbuf[5], rbuf[6], rbuf[7], rbuf[8]);
+            //calculate checksum
+            buf[3] = calc_crc(buf, 3);
+
+            //write/read the values
+            if (serial(buf, 4, rbuf) < 0) {
+                continue;
+            }
+            if (rbuf[7] != calc_crc(rbuf, 7)) {
+                if (crc_valid) *crc_valid = false;
+                printf("CRC does not match, check RX line.\n");
+                continue;
+            }
+            if (crc_valid) *crc_valid = true;
+            //construct reply
+            i_datagram = ((rbuf[3] << 24) | (rbuf[4] << 16) | (rbuf[5] << 8) | (rbuf[6] << 0));
+            // printf("got CRC: %02X calc CRC: %02X \n", crc, rbuf[5]);
+            // printf("sent: %02X, %02X, %02X, %02X received: %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X, %02X \n", buf[0], buf[1], buf[2], buf[3], rbuf[0], rbuf[1], rbuf[2], rbuf[3], rbuf[4], rbuf[5], rbuf[6], rbuf[7], rbuf[8]);
+        }
+        break;
+    }
+    if (attempt == MAX_ATTEMPTS) {
+        printf("transceive220X failed after %d attempts\n", MAX_ATTEMPTS);
     }
     return i_datagram;
 }
@@ -1832,6 +1809,9 @@ bool TMC220X::set_options(const options_t& options)
     } else if(HAS('H') && HAS('I') && HAS('J') && HAS('K') && HAS('L')) {
         setCoolConf((bool)GET('L'), GET('J'), GET('I'), GET('K'), GET('H'));
         set = true;
+    } else if(HAS('O')) {
+        uint8_t sg =  GET('O');
+        setStallguardThreshold(sg);
     }
     return set;
 }
@@ -1847,24 +1827,21 @@ void TMC220X::set_write_only(bool wo) {
 }
 
 //calculates CRC checksum and stores in last byte of message
-uint8_t TMC220X::calc_crc(uint8_t *buf, uint8_t cnt)
+uint8_t TMC220X::calc_crc(const uint8_t *buf, uint8_t cnt)
 {
-    // pointer address of last byte
-    uint8_t *crc = buf + cnt -1; // CRC located in last byte of message
+    uint8_t crc = 0;
     uint8_t currentByte;
-
-    *crc = 0;
-    for (int i = 0; i < cnt-1; i++) {  // Execute for all bytes of a message
+    for (int i = 0; i < cnt; i++) {  // Execute for all bytes of a message
         currentByte = buf[i];          // Retrieve a byte to be sent from Array
         for (int j = 0; j < 8; j++) {
-            if ((*crc >> 7) ^ (currentByte & 0x01)) {   // update CRC based result of XOR operation
-                *crc = (*crc << 1) ^ 0x07;
+            if ((crc >> 7) ^ (currentByte & 0x01)) {   // update CRC based result of XOR operation
+                crc = (crc << 1) ^ 0x07;
             } else {
-                *crc = (*crc << 1);
+                crc = crc << 1;
             }
             //crc &= 0xff;
             currentByte = currentByte >> 1;
         }   // for CRC bit
     }       // for message byte
-    return *crc & 0xff;
+    return crc;
 }

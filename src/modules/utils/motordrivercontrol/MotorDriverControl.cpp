@@ -499,25 +499,30 @@ int MotorDriverControl::sendSPI(uint8_t *b, int cnt, uint8_t *r)
 // Called by the drivers codes to send and receive UART data to/from the chip
 int MotorDriverControl::sendUART(uint8_t *b, int cnt, uint8_t *r) {
     //write data
-    for (int i = 0; i < cnt; ++i) {
-        serial->putc(b[i]);
-    }
+    serial->write(b, cnt);
 
-    // Compare the echo (TODO: Check getc for -1 meaning buffer empty .. either delay longer or return -1 from this method and fail the command attempt)
+    // Compare the echo
     safe_delay_ms(20);
     for (int i = 0; i < cnt; ++i) {
         auto echo = serial->getc(); //flush write data which is received in the RX line
-        if (echo != b[i]) {
-            printf("Bad echo: S:%02X R:%02X\n", b[i], echo);
+        if (echo < 0 || echo != b[i]) {
+            //printf("Bad echo: S:%02X R:%02X\n", b[i], echo);
+            serial->flush();
+            return -1;
         }
     }
 
-    //check if it is read command (TODO: Same as echo ... fail the command if buffer is short.. can retry at level above)
+    //check if it is read command
     if (!(b[2] >> 7)) {
         //TODO safe delay should not be constant, it depends on the baudrate and also SENDDELAY
         safe_delay_ms(20); //safe delay required until a reply is provided
         for (int i = 0; i < 8; ++i) {
-            r[i] = serial->getc();
+            int v = serial->getc();
+            if (v < 0) {
+                serial->flush();
+                return -1;
+            }
+            r[i] = v;
             //printf("RX: %02X\n", r[i]); // Debug
         }
     }

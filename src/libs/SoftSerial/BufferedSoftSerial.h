@@ -70,6 +70,8 @@ public:
      */
     int getc(void);
 
+    void flush();
+
     /** Write a single byte to the BufferedSoftSerial Port.
      *  @param c The byte to write to the BufferedSoftSerial Port
      *  @return The byte that was written to the BufferedSoftSerial Port Buffer
