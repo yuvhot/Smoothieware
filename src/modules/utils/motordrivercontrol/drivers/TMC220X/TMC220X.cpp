@@ -1803,7 +1803,7 @@ bool TMC220X::set_options(const options_t& options)
         } else if(s == 13 && HAS('Z')) {
             set_enable(GET('Z'));
             set = true;
-            
+
         }
 
     } else if(HAS('H') && HAS('I') && HAS('J') && HAS('K') && HAS('L')) {
@@ -1812,6 +1812,7 @@ bool TMC220X::set_options(const options_t& options)
     } else if(HAS('O')) {
         uint8_t sg =  GET('O');
         setStallguardThreshold(sg);
+        set = true;
     }
     return set;
 }

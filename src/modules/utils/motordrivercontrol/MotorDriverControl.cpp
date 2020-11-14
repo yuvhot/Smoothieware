@@ -325,7 +325,7 @@ void MotorDriverControl::on_gcode_received(void *argument)
                 // set motor currents in mA (Note not using M907 as digipots use that)
                 current= gcode->get_value(axis);
                 current= std::min(current, max_current);
-                gcode->stream->printf("Setting current for axis %c to %d mA", axis, current);
+                gcode->stream->printf("Setting current for axis %c to %d mA\n", axis, current);
                 set_current(current);
                 current_override= true;
             } else {
@@ -388,10 +388,11 @@ void MotorDriverControl::on_gcode_received(void *argument)
                     set_raw_register(gcode->stream, gcode->get_value('R'), gcode->get_value('V'));
 
                 }else if(gcode->subcode == 3 ) {
-                    set_options(gcode);
+                    if (gcode->has_letter(axis)) {
+                        set_options(gcode);
+                    }
                 }
             }
-
         } else if(gcode->m == 500 || gcode->m == 503) {
             if(current_override) {
                 gcode->stream->printf(";Motor %c id %d  current mA:\n", axis, id);
