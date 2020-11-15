@@ -9,11 +9,13 @@ mri.log
 gdb.txt
 deploy
 debug
+/.idea/
 /mbed/src/Debug/
 /mbed/src/Release/
 /LPC1768/
 /mbed/drop/
 /gcc-arm-none-eabi/
+/gcc-arm-none-eabi
 /BuildShell
 /BuildShellDebug
 /BuildShell.cmd
