@@ -1,39 +1,50 @@
 # Smoothieboard configuration file, see http://smoothieware.org/configuring-smoothie
 # NOTE Lines must not exceed 132 characters, and '#' characters mean what follows is ignored
+#
+# ___________.__                _____  .__.__  .__
+# \__    ___/|__| ____ ___.__. /     \ |__|  | |  |
+#   |    |   |  |/    <   |  |/  \ /  \|  |  | |  |
+#   |    |   |  |   |  \___  /    Y    \  |  |_|  |__
+#   |____|   |__|___|  / ____\____|__  /__|____/____/
+#                    \/\/            \/
+#
 
+#   -~=[ G E N E R A L ]=~-
 grbl_mode                                    true
+uart0.baud_rate                              115200           # Baud rate for the default hardware ( UART ) serial port
+second_usb_serial_enable                     false            # This enables a second USB serial port
+dfu_enable                                   true
 
-# Basic motion configuration
+#   -~=[ M O T I O N ]=~-
 default_feed_rate                            600              # Default speed (mm/minute) for G1/G2/G3 moves (80mm/s)
-default_seek_rate                            1200             # Default speed (mm/minute) for G0 moves
+default_seek_rate                            2000             # Default speed (mm/minute) for G0 moves
 mm_per_arc_segment                           0.0              # Fixed length for line segments that divide arcs, 0 to disable
 #mm_per_line_segment                         5                # Cut lines into segments this size
 mm_max_arc_error                             0.01             # The maximum error for line segments that divide arcs 0 to disable
                                                               # note it is invalid for both the above be 0
                                                               # if both are used, will use largest segment length based on radius
-// TinyMill uses 2mm double start acme screws = 0.5mm/rev
-// 200 steps/rev * 16 microsteps/step / 0.5mm/rev = 800 steps per mm
+
+# TinyMill uses 2mm double start acme screws = 0.5mm/rev
 alpha_steps_per_mm                           800              # Steps per mm for alpha ( X ) stepper
 beta_steps_per_mm                            800              # Steps per mm for beta ( Y ) stepper
 gamma_steps_per_mm                           800              # Steps per mm for gamma ( Z ) stepper
 
 # Planner module configuration : Look-ahead and acceleration configuration
 # See http://smoothieware.org/motion-control
-acceleration                                 1000             # Acceleration in mm/second/second.
-#z_acceleration                              500              # Acceleration for Z only moves in mm/s^2, 0 uses acceleration which is the default. DO NOT SET ON A DELTA
+acceleration                                 100              # Acceleration in mm/second/second.
+#z_acceleration                              50               # Acceleration for Z only moves in mm/s^2, 0 uses acceleration which is the default. DO NOT SET ON A DELTA
 junction_deviation                           0.05             # See http://smoothieware.org/motion-control#junction-deviation
 #z_junction_deviation                        0.0              # For Z only moves, -1 uses junction_deviation, zero disables junction_deviation on z moves DO NOT SET ON A DELTA
 
 # Cartesian axis speed limits
 x_axis_max_speed                             3000             # Maximum speed in mm/min
 y_axis_max_speed                             3000             # Maximum speed in mm/min
-z_axis_max_speed                             1000              # Maximum speed in mm/min
+z_axis_max_speed                             1000             # Maximum speed in mm/min
 
+#   -~=[ M O T O R S ]=~-
 # Stepper module configuration
 # Pins are defined as  ports, and pin numbers, appending "!" to the number will invert a pin
 # See http://smoothieware.org/pin-configuration and http://smoothieware.org/pinout
-
-## Motor driver configuration
 # TMC2209 pins
 # X UART 1.10
 # Y UART 1.9
@@ -41,13 +52,13 @@ z_axis_max_speed                             1000              # Maximum speed i
 # E0 UART 1.4
 # E1 UART 1.1
 # 19200 baud
-
 # SPI for TMC2130
 # MOSI 1.17
 # MISO 0.5
 # CLK 0.4
 
 motor_driver_control.enable                 true              # Enable module
+
 
 alpha_step_pin                               2.2              # Pin for alpha stepper step signal
 alpha_dir_pin                                2.6!             # Pin for alpha stepper direction, add '!' to reverse direction
@@ -67,41 +78,30 @@ motor_driver_control.alpha.microsteps        16               # The actual micro
                                                               # be extrapolated to 256 microsteps.
                                                                  # It can be 1, 2, 4, 8, 16, 32, 64, 128 or 256 microsteps
 motor_driver_control.alpha.chopper_mode      1                # 0 = spreadCycle ; 1 = stealthChop
+motor_driver_control.alpha.stealthchop_tpwmthrs        53     # (F1000 mm/min) Velocity taken from performing M911 while jogging
+motor_driver_control.alpha.stealthchop_pwm_lim         12     # PWM_LIM
+motor_driver_control.alpha.stealthchop_pwm_reg         8      # PWM_REG
+motor_driver_control.alpha.stealthchop_freewheel       0      # freewheel
+motor_driver_control.alpha.stealthchop_pwm_autograd    1      # PWM_AUTOGRAD
+motor_driver_control.alpha.stealthchop_pwm_autoscale   1      # PWM_AUTOSCALE
+motor_driver_control.alpha.stealthchop_pwm_freq        1      # PWM_FREQ
+motor_driver_control.alpha.stealthchop_pwm_grad        14     # PWM_GRAD
+motor_driver_control.alpha.stealthchop_pwm_ofs         36     # PWM_OFS
+#  Chopper config from Marlin for 24V offtime = 4, hend = 2, hstart = 1
+motor_driver_control.alpha.spreadcycle_toff           4       # TOFF   (2 - 15)
+motor_driver_control.alpha.spreadcycle_tbl            32      # TBL    (16/24/32/48)
+motor_driver_control.alpha.spreadcycle_hstrt          1       # HSTART (1 - 8)
+motor_driver_control.alpha.spreadcycle_hend           2       # HEND   (-3 - 12)
+motor_driver_control.alpha.stallguard_tcoolthrs		  1000    # (F60mm/min) Lower coolstep velocity treshold (must be set sane for s.g to work)
+motor_driver_control.alpha.stallguard_thrs			  80      # SG_RESULT <= SGTHRS*2
+motor_driver_control.alpha.coolconf_seimin			  0		  # 0 = 1/2 current setting (IRUN) - use with IRUN >= 10!
+                                                              # 1 = 1/4 current setting (IRUN) - use with IRUN >= 20!
+motor_driver_control.alpha.coolconf_sedn		      1		  # 0/2/8/32
+motor_driver_control.alpha.coolconf_semax			  2		  # 0-15
+motor_driver_control.alpha.coolconf_seup		      0		  # 1,2,4,8 - current increment steps per measured SG value
+motor_driver_control.alpha.coolconf_semin			  5		  # 0: CoolStep off, 1-15
 
-# Stealthchop
-# ! Please see datasheet for more details
-motor_driver_control.alpha.stealthchop_tpwmthrs        0           # The upper velocity for stealthChop voltage PWM mode.
-                                                                    # When the velocity exceeds this value, the
-                                                                    # driver switches to spreadCycle. Default 0 (disabled).
-                                                                    # If enabled you probably should also tune SpreadCycle
-motor_driver_control.alpha.stealthchop_pwm_lim         12          # PWM_LIM
-motor_driver_control.alpha.stealthchop_pwm_reg         1           # PWM_REG
-motor_driver_control.alpha.stealthchop_freewheel       0           # freewheel
-motor_driver_control.alpha.stealthchop_pwm_autograd    1           # PWM_AUTOGRAD
-motor_driver_control.alpha.stealthchop_pwm_autoscale   1           # PWM_AUTOSCALE
-motor_driver_control.alpha.stealthchop_pwm_freq        1           # PWM_FREQ
-motor_driver_control.alpha.stealthchop_pwm_grad        0           # PWM_GRAD
-motor_driver_control.alpha.stealthchop_pwm_ofs         36          # PWM_OFS
-
-# SpreadCycle
-# ! Please see datasheet for more details
-# 24V offtime = 4, hend = 2, hstart = 1
-motor_driver_control.alpha.spreadcycle_toff           4           # TOFF   (2 - 15)
-motor_driver_control.alpha.spreadcycle_tbl            32          # TBL    (16/24/32/48)
-motor_driver_control.alpha.spreadcycle_hstrt          1           # HSTART (1 - 8)
-motor_driver_control.alpha.spreadcycle_hend           2           # HEND   (-3 - 12)
-
-# Stallguard & Coolconf
-motor_driver_control.alpha.stallguard_tcoolthrs		  1048575           # Lower coolstep velocity treshold
-motor_driver_control.alpha.stallguard_thrs			  80          # SG_RESULT <= SGTHRS*2
-
-motor_driver_control.alpha.coolconf_seimin			  0			  # 0 = 1/2 current setting (IRUN) - use with IRUN >= 10!
-                                                                  # 1 = 1/4 current setting (IRUN) - use with IRUN >= 20!
-motor_driver_control.alpha.coolconf_sedn		      1			  # 0/2/8/32
-motor_driver_control.alpha.coolconf_semax			  2			  # 0-15
-motor_driver_control.alpha.coolconf_seup		      0			  # 1,2,4,8 - current increment steps per measured SG value
-motor_driver_control.alpha.coolconf_semin			  5			  # 0: CoolStep off, 1-15
-
+#   -~=[ Y ]=~-
 beta_step_pin                                0.19             # Pin for beta stepper step signal
 beta_dir_pin                                 0.20             # Pin for beta stepper direction, add '!' to reverse direction
 beta_en_pin                                  2.8              # Pin for beta enable
@@ -117,7 +117,7 @@ motor_driver_control.beta.current            1200
 motor_driver_control.beta.sense_resistor     110
 motor_driver_control.beta.microsteps         16
 motor_driver_control.beta.chopper_mode       1
-motor_driver_control.beta.stealthchop_tpwmthrs        0
+motor_driver_control.beta.stealthchop_tpwmthrs        53
 motor_driver_control.beta.stealthchop_pwm_lim         12
 motor_driver_control.beta.stealthchop_pwm_reg         1
 motor_driver_control.beta.stealthchop_freewheel       0
@@ -130,7 +130,7 @@ motor_driver_control.beta.spreadcycle_toff   4
 motor_driver_control.beta.spreadcycle_tbl    32
 motor_driver_control.beta.spreadcycle_hstrt  1
 motor_driver_control.beta.spreadcycle_hend   2
-motor_driver_control.beta.stallguard_tcoolthrs 1048575
+motor_driver_control.beta.stallguard_tcoolthrs 1000
 motor_driver_control.beta.stallguard_thrs   60
 motor_driver_control.beta.coolconf_seimin   0
 motor_driver_control.beta.coolconf_sedn	    1
@@ -138,7 +138,7 @@ motor_driver_control.beta.coolconf_semax	2
 motor_driver_control.beta.coolconf_seup		0
 motor_driver_control.beta.coolconf_semin	5
 
-
+#   -~=[ Z ]=~-
 gamma_step_pin                               0.22             # Pin for gamma stepper step signal
 gamma_dir_pin                                2.11!            # Pin for gamma stepper direction, add '!' to reverse direction
 gamma_en_pin                                 0.21             # Pin for gamma enable
@@ -154,7 +154,7 @@ motor_driver_control.gamma.current           1200
 motor_driver_control.gamma.sense_resistor    110
 motor_driver_control.gamma.microsteps        16
 motor_driver_control.gamma.chopper_mode      1
-motor_driver_control.gamma.stealthchop_tpwmthrs        0
+motor_driver_control.gamma.stealthchop_tpwmthrs        53
 motor_driver_control.gamma.stealthchop_pwm_lim         12
 motor_driver_control.gamma.stealthchop_pwm_reg         1
 motor_driver_control.gamma.stealthchop_freewheel       0
@@ -167,7 +167,7 @@ motor_driver_control.gamma.spreadcycle_toff  4
 motor_driver_control.gamma.spreadcycle_tbl   32
 motor_driver_control.gamma.spreadcycle_hstrt 1
 motor_driver_control.gamma.spreadcycle_hend  2
-motor_driver_control.gamma.stallguard_tcoolthrs 1048575
+motor_driver_control.gamma.stallguard_tcoolthrs 1000
 motor_driver_control.gamma.stallguard_thrs   60
 motor_driver_control.gamma.coolconf_seimin   0
 motor_driver_control.gamma.coolconf_sedn	 1
@@ -176,28 +176,27 @@ motor_driver_control.gamma.coolconf_seup	 0
 motor_driver_control.gamma.coolconf_semin	 5
 
 
-
-## Endstops
-# See http://smoothieware.org/endstops
+#   -~=[ E N D S T O P S ]=~-
 endstops_enable                              true             # The endstop module is enabled by default and can be disabled here
-alpha_min_endstop                            1.29^            # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
+alpha_min_endstop                            1.29v            # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
 alpha_homing_direction                       home_to_min      # Or set to home_to_max and set alpha_max and uncomment the alpha_max_endstop
 alpha_min                                    0                # This gets loaded as the current position after homing when home_to_min is set
 alpha_max                                    200              # This gets loaded as the current position after homing when home_to_max is set
-beta_max_endstop                             1.28^            # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
+beta_max_endstop                             1.28v            # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
 beta_homing_direction                        home_to_max      # Or set to home_to_max and set alpha_max and uncomment the alpha_max_endstop
 beta_min                                     -170             # This gets loaded as the current position after homing when home_to_min is set
 beta_max                                     0                # This gets loaded as the current position after homing when home_to_max is set
-gamma_max_endstop                            1.27^            # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
+gamma_max_endstop                            1.27v            # Pin to read min endstop, add a ! to invert if endstop is NO connected to ground
 gamma_homing_direction                       home_to_max      # Or set to home_to_max and set alpha_max and uncomment the alpha_max_endstop
 gamma_min                                    -57              # This gets loaded as the current position after homing when home_to_min is set
 gamma_max                                    0                # This gets loaded as the current position after homing when home_to_max is set
-
 alpha_max_travel                             200              # Max travel in mm for alpha/X axis when homing
 beta_max_travel                              170              # Max travel in mm for beta/Y axis when homing
 gamma_max_travel                             57               # Max travel in mm for gamma/Z axis when homing
 
 # Optional enable limit switches, actions will stop if any enabled limit switch is triggered
+# May want to enable.  At low velocity (<1000mm/min) if there is sufficient resistance to loose a step
+# it would trigger an abort.
 #alpha_limit_enable                          true             # Set to true to enable X min and max limit switches
 #beta_limit_enable                           true             # Set to true to enable Y min and max limit switches
 #gamma_limit_enable                          true             # Set to true to enable Z min and max limit switches
@@ -210,30 +209,19 @@ beta_slow_homing_rate_mm_s                   2                # Beta/Y  slow hom
 gamma_fast_homing_rate_mm_s                  10               # Gamma/Z fast homing feedrate in mm/second
 gamma_slow_homing_rate_mm_s                  2                # Gamma/Z slow homing feedrate in mm/second
 
-alpha_homing_retract_mm                      0.1                # Distance to retract from the endstop after it is hit for alpha/X
-beta_homing_retract_mm                       0.1                # Distance to retract from the endstop after it is hit for beta/Y
-gamma_homing_retract_mm                      0.1                # Distance to retract from the endstop after it is hit for gamma/Z
+alpha_homing_retract_mm                      0.1              # Distance to retract from the endstop after it is hit for alpha/X
+beta_homing_retract_mm                       0.1              # Distance to retract from the endstop after it is hit for beta/Y
+gamma_homing_retract_mm                      0.1              # Distance to retract from the endstop after it is hit for gamma/Z
+home_z_first                                 true             # Uncomment and set to true to home the Z first, otherwise Z homes after XY
 
-# Optional order in which axis will home, default is they all home at the same time,
-# If this is set it will force each axis to home one at a time in the specified order
-#homing_order                                 XYZ              # X axis followed by Y then Z last
-#move_to_origin_after_home                    false            # Move XY to 0,0 after homing
-#endstop_debounce_count                       100              # Uncomment if you get noise on your endstops, default is 100
-#endstop_debounce_ms                          1                # Uncomment if you get noise on your endstops, default is 1 millisecond debounce
-home_z_first                                  true             # Uncomment and set to true to home the Z first, otherwise Z homes after XY
 
-# End of endstop config
-# Delete the above endstop section and uncomment next line and copy and edit Snippets/abc-endstop.config file to enable endstops for ABC axis
-#include abc-endstop.config
-
-## Z-probe
-# See http://smoothieware.org/zprobe
+#   -~=[ P R O B E ]=~-
 zprobe.enable                                true            # Set to true to enable a zprobe
 zprobe.probe_pin                             0.10!^          # Pin probe is attached to, if NC remove the !
 zprobe.slow_feedrate                         5               # Mm/sec probe feed rate
 #zprobe.debounce_ms                          1               # Set if noisy
 zprobe.fast_feedrate                         100             # Move feedrate mm/sec
-#zprobe.probe_height                          5               # How much above bed to start probe
+#zprobe.probe_height                          5              # How much above bed to start probe
 
 
 # Levelling strategy
@@ -250,23 +238,19 @@ zprobe.fast_feedrate                         100             # Move feedrate mm/
 ## System configuration
 # Serial communications configuration ( baud rate defaults to 9600 if undefined )
 # For communication over the UART port, *not* the USB/Serial port
-uart0.baud_rate                              115200           # Baud rate for the default hardware ( UART ) serial port
 
-second_usb_serial_enable                     false            # This enables a second USB serial port
-#leds_disable                                true             # Disable using leds after config loaded
-#play_led_disable                            true             # Disable the play led
-dfu_enable                                   true
 
-# Wired to E-STOP NO
-# Kill button maybe assigned to a different pin, set to the onboard pin by default
-# See http://smoothieware.org/killbutton
+#   -~=[ E - S T O P ]=~-
+# Wired to E-STOP N.O.
 kill_button_enable                           true             # Set to true to enable a kill button
 kill_button_pin                              1.0!^            # Kill button pin. default is same as pause button 2.12 (2.11 is another good choice)
 
+#   -~=[ S P I N D L E ]=~-
 # spindle_fwd_pin                           1.26
 # spindle_rev_pin                           1.25
 # spindle_pwm                               2.0
-
+# min_rpm                                   1000
+# max_rpm                                   10800
 
 
 

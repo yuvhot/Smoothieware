@@ -47,7 +47,9 @@ class StepperDrv{
         virtual void dump_status(StreamOutput *stream);
         virtual bool set_raw_register(StreamOutput *stream, uint32_t reg, uint32_t val);
         virtual bool check_alarm();
-        
+        virtual void pre_homing() {}
+        virtual void post_homing() {}
+
         virtual void get_debug_info(StreamOutput *stream);
         
         virtual void set_chip_type(StepstickParameters::CHIP_TYPE);

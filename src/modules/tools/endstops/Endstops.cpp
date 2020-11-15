@@ -7,6 +7,7 @@
 
 #include "libs/Module.h"
 #include "libs/Kernel.h"
+#include "libs/EventState.h"
 #include "modules/communication/utils/Gcode.h"
 #include "modules/robot/Conveyor.h"
 #include "modules/robot/ActuatorCoordinates.h"
@@ -803,8 +804,12 @@ void Endstops::home(axis_bitmap_t a)
 
 void Endstops::process_home_command(Gcode* gcode)
 {
+    EventState homing_state = EventState::PRE;
+
     // First wait for the queue to be empty
     THECONVEYOR->wait_for_idle();
+
+    THEKERNEL->call_event(_EVENT_ENUM::ON_HOMING, &homing_state);
 
     // turn off any compensation transform so Z does not move as XY home
     auto savect= THEROBOT->compensationTransform;
@@ -854,8 +859,10 @@ void Endstops::process_home_command(Gcode* gcode)
         }
     }
 
+    homing_state = EventState::POST;
     if(haxis.none()) {
         THEKERNEL->streams->printf("WARNING: Nothing to home\n");
+        THEKERNEL->call_event(_EVENT_ENUM::ON_HOMING, &homing_state);
         return;
     }
 
@@ -904,6 +911,7 @@ void Endstops::process_home_command(Gcode* gcode)
         }
         // clear all the homed flags
         for (auto &p : homing_axis) p.homed= false;
+        THEKERNEL->call_event(_EVENT_ENUM::ON_HOMING, &homing_state);
         return;
     }
 
@@ -990,6 +998,8 @@ void Endstops::process_home_command(Gcode* gcode)
         back_off_home(haxis);
         move_to_origin(haxis);
     }
+
+    THEKERNEL->call_event(_EVENT_ENUM::ON_HOMING, &homing_state);
 }
 
 void Endstops::set_homing_offset(Gcode *gcode)

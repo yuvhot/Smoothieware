@@ -37,6 +37,7 @@ class MotorDriverControl : public Module {
         void on_enable(void *argument);
         void on_idle(void *argument);
         void on_second_tick(void *argument);
+        void on_homing(void *argument) override;
 
     private:
         bool config_module(uint16_t cs);

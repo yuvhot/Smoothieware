@@ -386,6 +386,9 @@ public:
     using options_t= std::map<char,int>;
 
     bool set_options(const options_t& options);
+
+    void pre_homing() override;
+    void post_homing() override;
     
     void set_write_only(bool wo);
 private:

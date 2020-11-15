@@ -674,7 +674,7 @@ void TMC220X::init(uint16_t cs)
     this->gconf_register_value = TMC220X_GCONF_DEFAULT_DATA;
     this->slaveconf_register_value = TMC220X_ZEROS_DEFAULT_DATA;
     this->ihold_irun_register_value = TMC220X_ZEROS_DEFAULT_DATA;
-    this->tpowerdown_register_value = TMC220X_TPOWERDOWN_DEFAULT_DATA;
+    this->tpowerdown_register_value = 128;
     this->tpwmthrs_register_value = TMC220X_ZEROS_DEFAULT_DATA;
     this->tcoolthrs_register_value = TMC220X_ZEROS_DEFAULT_DATA;
     this->sgthrs_register_value = 0;
@@ -1509,44 +1509,52 @@ void TMC220X::dump_status(StreamOutput *stream)
             stream->printf(" sgthrs register [L]: %08X (%d)\n", sgthrs_register_value, sgthrs_register_value);
             stream->printf(" coolconf register [L]: %08lX (%ld)\n", coolconf_register_value, coolconf_register_value);
         }
+        uint32_t  tstep = readRegister(TMC220X_TSTEP_REGISTER, &crc_valid);
+        stream->printf(" tstep register: %08lX (%ld) CRC:%d\n", tstep, tstep, crc_valid);
         // I really don't see any point having this
         // stream->printf(" motor_driver_control.xxx.reg %05lX,%05lX,%05lX,%05lX,%05lX,%05lX,%05lX\n", gconf_register_value, slaveconf_register_value, ihold_irun_register_value,
                                                                                               // tpowerdown_register_value, tpwmthrs_register_value, chopconf_register_value, pwmconf_register_value);
-        
+
+
+        uint32_t gconf_status = readRegister(TMC220X_DRV_STATUS_REGISTER, &crc_valid);
+        printf("DRV status: %08lX (%lu) [CRC: %d]\n", gconf_status, gconf_status, crc_valid );
+
+        float result = ((gconf_status & TMC220X_DRV_STATUS_CS_ACTUAL) >> TMC220X_DRV_STATUS_CS_ACTUAL_SHIFT);
+        float resistor_value = (float)this->resistor;
+        float voltage = (chopconf_register_value & TMC220X_CHOPCONF_VSENSE) ? 0.18F : 0.32F;
+        result = (result + 1.0F) / 32.0F * voltage / (resistor_value + 20) * 1000.0F * 1000.0F;
+        int current_reading = (unsigned int)roundf(result);
+
+
         bool moving = THEROBOT->actuators[actu]->is_moving();
         // dump out in the format that the processing script needs
         if (moving) {
-            stream->printf("P#%lu,k%u,", THEROBOT->actuators[actu]->get_current_step(), getCurrentCSReading());
+            stream->printf("P#%lu,k%u,", THEROBOT->actuators[actu]->get_current_step(), current_reading);
         } else {
             unsigned long result= readRegister(TMC220X_MSCNT_REGISTER); // get the status bits
             stream->printf("S#%ld,",result);
         }
         stream->printf("D%d,", THEROBOT->actuators[actu]->which_direction() ? -1 : 1);
-        stream->printf("C%u,M%d,", get_current(), get_microsteps());
-        // stream->printf('S');
-        // stream->printf(tmc22XStepper.getSpeed(), DEC);
-
         //detect the winding status
-        if (isOpenLoadA()) {
+        if (gconf_status & TMC220X_DRV_STATUS_OLA) {
             stream->printf("Ao,");
-        } else if(isShortToGroundA()) {
+        } else if(gconf_status & TMC220X_DRV_STATUS_S2GA) {
             stream->printf("Ag,");
         } else {
             stream->printf("A-,");
         }
         //detect the winding status
-        if (isOpenLoadB()) {
+        if (gconf_status & TMC220X_DRV_STATUS_OLB) {
             stream->printf("Bo,");
-        } else if(isShortToGroundB()) {
+        } else if(gconf_status & TMC220X_DRV_STATUS_S2GB) {
             stream->printf("Bg,");
         } else {
             stream->printf("B-,");
         }
 
-        char temperature = getOverTemperature();
-        if (temperature == 0) {
+        if (gconf_status & TMC220X_DRV_STATUS_OT) {
             stream->printf("T-,");
-        } else if (temperature == TMC220X_OVERTEMPERATURE_PREWARNING) {
+        } else if (gconf_status & TMC220X_OVERTEMPERATURE_PREWARNING) {
             stream->printf("Tw,");
         } else {
             stream->printf("Te,");
@@ -1845,4 +1853,20 @@ uint8_t TMC220X::calc_crc(const uint8_t *buf, uint8_t cnt)
         }   // for CRC bit
     }       // for message byte
     return crc;
+}
+
+void TMC220X::pre_homing() {
+    // Make sure stealthchop mode is active - stallguard only works in stealthchop for 2209 (opposite of 2130)
+    setSpreadCycleEnabled(false);
+
+    // Future: Lower current limit for reliability?
+}
+
+void TMC220X::post_homing() {
+    // Resume normal setting
+    if (this->chopper_mode == 1) {
+        setSpreadCycleEnabled(false);
+    } else {
+        setSpreadCycleEnabled(true);
+    }
 }
