@@ -20,8 +20,9 @@ public:
 
 private:
 
-    bool doProbe(Gcode *gc, bool scanonly);
-    bool findBed();
+    bool doProbe(Gcode *gc);
+    bool scan_bed(Gcode *gc);
+    bool findBed(float x, float y);
     void setAdjustFunction(bool on);
     void print_bed_level(StreamOutput *stream);
     void doCompensation(float *target, bool inverse);
@@ -35,10 +36,11 @@ private:
     float height_limit;
     float dampening_start;
     float damping_interval;
+    std::string before_probe, after_probe;
 
     float *grid;
     std::tuple<float, float, float> probe_offsets;
-    std::tuple<float, float, float> m_attach;
+    float *m_attach;
     float x_start,y_start;
     float x_size,y_size;
 

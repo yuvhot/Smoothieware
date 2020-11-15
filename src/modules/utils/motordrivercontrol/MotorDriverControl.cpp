@@ -97,6 +97,17 @@ bool MotorDriverControl::config_module(uint16_t cs)
         return false; // axis is illegal
     }
 
+<<<<<<< HEAD
+=======
+    spi_cs_pin.from_string(THEKERNEL->config->value( motor_driver_control_checksum, cs, spi_cs_pin_checksum)->by_default("nc")->as_string())->as_output();
+    if(!spi_cs_pin.connected()) {
+        printf("MotorDriverControl %c ERROR: chip select not defined\n", axis);
+        return false; // if not defined then we can't use this instance
+    }
+    spi_cs_pin.set(1);
+
+
+>>>>>>> edge
     str= THEKERNEL->config->value( motor_driver_control_checksum, cs, chip_checksum)->by_default("")->as_string();
     if(str.empty()) {
         printf("MotorDriverControl %c ERROR: chip type not defined\n", axis);
@@ -289,7 +300,7 @@ void MotorDriverControl::on_idle(void *argument)
 void MotorDriverControl::on_halt(void *argument)
 {
     if(argument == nullptr) {
-        // we are being safe here and makign sure this gets called in on_idle not when on_halt is called
+        // we are being safe here and making sure this gets called in on_idle not when on_halt is called
         on_enable(nullptr);
     }
 }
