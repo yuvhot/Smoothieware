@@ -10,6 +10,7 @@
 #include "libs/Kernel.h"
 #include "SpindleControl.h"
 #include "PWMSpindleControl.h"
+#include "OpenLoopPWMSpindleControl.h"
 #include "AnalogSpindleControl.h"
 #include "HuanyangSpindleControl.h"
 #include "Config.h"
@@ -40,6 +41,8 @@ void SpindleMaker::load_spindle(){
     // check config which spindle type we need
     if( spindle_type.compare("pwm") == 0 ) {
         spindle = new PWMSpindleControl();
+    } else if( spindle_type.compare("olpwm") == 0 ) {
+        spindle = new OpenLoopPWMSpindleControl();
     } else if ( spindle_type.compare("analog") == 0 ) {
         spindle = new AnalogSpindleControl();
     } else if ( spindle_type.compare("modbus") == 0 ) {

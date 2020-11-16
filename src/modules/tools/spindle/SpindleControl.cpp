@@ -37,27 +37,23 @@ void SpindleControl::on_gcode_received(void *argument)
             report_settings();
 
         }
-        else if (gcode->m == 3)
+        else if (gcode->m == 3 || gcode->m == 4)
         {
             THECONVEYOR->wait_for_idle();
-            // M3: Spindle on
-            if(!spindle_on) {
-                turn_on();
-            }
-
             // M3 with S value provided: set speed
             if (gcode->has_letter('S'))
             {
                 set_speed(gcode->get_value('S'));
             }
+
+            // M3: Spindle on
+            turn_on(gcode->m == 3);
         }
         else if (gcode->m == 5)
         {
             THECONVEYOR->wait_for_idle();
             // M5: spindle off
-            if(spindle_on) {
-                turn_off();
-            }
+            turn_off();
         }
     }
 

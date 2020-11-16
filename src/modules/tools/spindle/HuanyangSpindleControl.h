@@ -19,7 +19,7 @@ class HuanyangSpindleControl: public ModbusSpindleControl {
         
     private:
         
-        void turn_on(void);
+        void turn_on(bool forward);
         void turn_off(void);
         void set_speed(int);
         void report_speed(void);

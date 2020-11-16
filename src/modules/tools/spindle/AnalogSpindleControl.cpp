@@ -61,7 +61,7 @@ void AnalogSpindleControl::on_module_loaded()
     }
 }
 
-void AnalogSpindleControl::turn_on() 
+void AnalogSpindleControl::turn_on(bool forward)
 {
     // set the output for switching the VFD on
     if(switch_on != NULL) 

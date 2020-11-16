@@ -76,7 +76,7 @@
 #include "gpio.h"
 #include "Modbus.h"
 
-void HuanyangSpindleControl::turn_on()
+void HuanyangSpindleControl::turn_on(bool forward)
 {
     // prepare data for the spindle off command
     char turn_on_msg[6] = { 0x01, 0x03, 0x01, 0x01, 0x00, 0x00 };

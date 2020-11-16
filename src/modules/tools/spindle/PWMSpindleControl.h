@@ -56,7 +56,7 @@ class PWMSpindleControl: public SpindleControl {
         volatile uint32_t last_time; // Time delay between last two edges
         volatile uint32_t irq_count;
         
-        void turn_on(void);
+        void turn_on(bool forward);
         void turn_off(void);
         void set_speed(int);
         void report_speed(void);

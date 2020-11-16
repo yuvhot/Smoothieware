@@ -169,7 +169,7 @@ uint32_t PWMSpindleControl::on_update_speed(uint32_t dummy)
     return 0;
 }
 
-void PWMSpindleControl::turn_on() {
+void PWMSpindleControl::turn_on(bool forward) {
     spindle_on = true;
 }
 
