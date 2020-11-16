@@ -1044,8 +1044,15 @@ void Endstops::handle_park()
     THEROBOT->push_state();
     THEROBOT->absolute_mode = true;
     char buf[32];
-    snprintf(buf, sizeof(buf), "G53 G0 X%f Y%f", THEROBOT->from_millimeters(saved_position[X_AXIS]), THEROBOT->from_millimeters(saved_position[Y_AXIS])); // must use machine coordinates in case G92 or WCS is in effect
     struct SerialMessage message;
+    // Z first!
+    snprintf(buf, sizeof(buf), "G53 G0 Z%f", THEROBOT->from_millimeters(saved_position[Z_AXIS]));
+    message.message = buf;
+    message.stream = &(StreamOutput::NullStream);
+    THEKERNEL->call_event(ON_CONSOLE_LINE_RECEIVED, &message ); // as it is a multi G code command
+    THECONVEYOR->wait_for_idle();
+
+    snprintf(buf, sizeof(buf), "G53 G0 X%f Y%f", THEROBOT->from_millimeters(saved_position[X_AXIS]), THEROBOT->from_millimeters(saved_position[Y_AXIS])); // must use machine coordinates in case G92 or WCS is in effect
     message.message = buf;
     message.stream = &(StreamOutput::NullStream);
     THEKERNEL->call_event(ON_CONSOLE_LINE_RECEIVED, &message ); // as it is a multi G code command
