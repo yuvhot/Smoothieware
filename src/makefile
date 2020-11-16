@@ -19,7 +19,8 @@ WRITE_BUFFER_DISABLE=0
 # specific amount of space for the stack.  The heap's growth will be
 # constrained to reserve this much space for the stack and the stack won't be
 # able to grow larger than this amount.
-STACK_SIZE=3072
+#STACK_SIZE=3072
+STACK_SIZE=4096
 
 # Set to 1 to allow MRI debug monitor to take full control of UART0 and use it
 # as a dedicated debug channel.  If you are using the USB based serial port for
@@ -72,7 +73,7 @@ ifeq "$(EXCLUDE_MODULES)" ""
 
 ifeq "$(CNC)" "1"
 # CNC build excludes these
-export EXCLUDE_MODULES = tools/filamentdetector tools/scaracal tools/temperaturecontrol tools/temperatureswitch tools/extruder tools/laser utils/panel
+export EXCLUDE_MODULES = tools/filamentdetector tools/scaracal tools/temperaturecontrol tools/temperatureswitch tools/extruder tools/laser utils/panel tools/switch tools/rotarydeltacalibration
 else
 # 3D build excludes these
 export EXCLUDE_MODULES = tools/drillingcycles tools/spindle
@@ -101,7 +102,7 @@ DEFINES += -DN_PRIMARY_AXIS=$(PAXIS)
 endif
 
 # set to not compile in any network support
-#export NONETWORK = 1
+export NONETWORK = 1
 
 include $(BUILD_DIR)/build.mk
 
