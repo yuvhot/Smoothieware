@@ -7,17 +7,44 @@
 
 #include "libs/Module.h"
 #include "libs/Kernel.h"
+#include "Robot.h"
 #include "Gcode.h"
 #include "Conveyor.h"
 #include "SpindleControl.h"
+#include "checksumm.h"
+#include "PublicDataRequest.h"
+#include "SwitchPublicAccess.h"
+#include "utils.h"
+
+#define spindle_on_checksum            CHECKSUM("spindle_on")
+#define spindle_fwd_checksum           CHECKSUM("spindle_fwd")
+
+void SpindleControl::on_get_public_data(void *argument)
+{
+    PublicDataRequest* pdr = (PublicDataRequest *) argument;
+    if (pdr->starts_with(switch_checksum)) {
+        if(pdr->second_element_is(spindle_on_checksum)) {
+            ((struct pad_switch *) pdr->get_data_ptr())->state = spindle_on;
+            pdr->set_taken();
+        }
+        if(pdr->second_element_is(spindle_fwd_checksum)) {
+            ((struct pad_switch *) pdr->get_data_ptr())->state = !spindle_reverse;
+            pdr->set_taken();
+        }
+    }
+}
 
 void SpindleControl::on_gcode_received(void *argument)
 {
 
     Gcode *gcode = static_cast<Gcode *>(argument);
 
-    if (gcode->has_m)
-    {
+    if(gcode->has_letter('S')) {
+        // S-Words can appear on their own or before an M[3-5] code
+        set_speed_base(gcode->get_value('S'));
+    }
+
+    if (gcode->has_m) {
         if (gcode->m == 957)
         {
             // M957: report spindle speed
@@ -43,7 +70,7 @@ void SpindleControl::on_gcode_received(void *argument)
             // M3 with S value provided: set speed
             if (gcode->has_letter('S'))
             {
-                set_speed(gcode->get_value('S'));
+                set_speed_base(gcode->get_value('S'));
             }
 
             // M3: Spindle on
@@ -56,7 +83,11 @@ void SpindleControl::on_gcode_received(void *argument)
             turn_off();
         }
     }
+}
 
+void SpindleControl::set_speed_base(float speed) {
+    THEROBOT->set_s_value(speed);
+    set_speed(speed);
 }
 
 void SpindleControl::on_halt(void *argument)

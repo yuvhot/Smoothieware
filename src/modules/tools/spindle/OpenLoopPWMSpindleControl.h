@@ -28,7 +28,6 @@ private:
     float current_pwm_value;
     float max_pwm;
     bool pwm_output_inverted;
-    bool spindle_reverse;
     int min_rpm;
     int max_rpm;
     int default_rpm;

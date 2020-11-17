@@ -243,13 +243,8 @@ std::string Kernel::get_query_string()
                 n = snprintf(buf, sizeof(buf), "|L:%1.4f", lp);
                 if(n > sizeof(buf)) n= sizeof(buf);
                 str.append(buf, n);
-                float sr= robot->get_s_value();
-                n = snprintf(buf, sizeof(buf), "|S:%1.4f", sr);
-                if(n > sizeof(buf)) n= sizeof(buf);
-                str.append(buf, n);
             }
         #endif
-
     } else {
         // return the last milestone if idle
         char buf[128];
@@ -298,6 +293,12 @@ std::string Kernel::get_query_string()
                 str.append(buf, n);
             }
         }
+    } else {
+        // Speed
+        char buf[28];
+        size_t n = snprintf(buf, sizeof(buf), "|S:%1.1f", robot->get_s_value());
+        if(n > sizeof(buf)) n= sizeof(buf);
+        str.append(buf, n);
     }
 
     // if printing from SD card add progress

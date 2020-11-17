@@ -15,13 +15,18 @@ class SpindleControl: public Module {
         SpindleControl() {};
         virtual ~SpindleControl() {};
         virtual void on_module_loaded() {};
+        virtual void on_get_public_data(void *argument) override;
 
     protected:
         bool spindle_on;
+        bool spindle_reverse;
 
     private:
-        void on_gcode_received(void *argument);
-        void on_halt(void *argument);
+        void on_gcode_received(void *argument) override;
+        void on_halt(void *argument) override;
+
+
+        void set_speed_base(float speed);
         
         virtual void turn_on(bool forward) {};
         virtual void turn_off(void) {};
