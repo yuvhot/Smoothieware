@@ -21,7 +21,7 @@ flash:
 	@ $(MAKE) -C src flash
 
 dfu:
-	@ $(MAKE) -C src dfu_pi3
+	@ $(MAKE) -C src dfu
 
 upload:
 	@ $(MAKE) -C src upload

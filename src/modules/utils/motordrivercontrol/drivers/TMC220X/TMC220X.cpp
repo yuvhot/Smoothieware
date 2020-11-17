@@ -1512,6 +1512,7 @@ void TMC220X::dump_status(StreamOutput *stream)
         stream->printf(" tpowerdown register: %08lX (%ld)\n", tpowerdown_register_value, tpowerdown_register_value);
         stream->printf(" tpwmthrs register: %08lX (%ld)\n", tpwmthrs_register_value, tpwmthrs_register_value);
         stream->printf(" chopconf register: %08lX (%ld)\n", chopconf_register_value, chopconf_register_value);
+        stream->printf(" chopconf register: %08lX\n", readRegister(TMC220X_CHOPCONF_REGISTER));
         stream->printf(" pwmconf register: %08lX (%ld)\n", pwmconf_register_value, pwmconf_register_value);
         if (chip_type == StepstickParameters::CHIP_TYPE::TMC2209) {
             unsigned long result= getStallguardResult();
