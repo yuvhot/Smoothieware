@@ -224,12 +224,15 @@ kill_button_enable                                      true    # Set to true to
 kill_button_pin                                         1.0!^   # Kill button pin. default is same as pause button 2.12 (2.11 is another good choice)
 
 #   -~=[ S P I N D L E ]=~-
-# spindle_fwd_pin                                       1.26
-# spindle_rev_pin                                       1.25
-# spindle_pwm                                           2.0
-# min_rpm                                               1000
-# max_rpm                                               10800
-
+spindle.enable                                          true
+spindle.type                                            olpwm
+spindle.forward_pin                                     1.26
+spindle.reverse_pin                                     1.25
+spindle.pwm_pin                                         2.0
+spindle.min_rpm                                         0
+spindle.max_rpm                                         10800
+spindle.default_rpm                                     5000
+spindle.change_direction_dwell_ms                       250
 
 
 
