@@ -133,6 +133,7 @@ void OpenLoopPWMSpindleControl::turn_off() {
 }
 
 void OpenLoopPWMSpindleControl::set_speed(int rpm) {
+    SpindleControl::set_speed(rpm);
     current_speed_rpm = rpm;
     current_pwm_value = calc_pwm_from_rpm(rpm);
 

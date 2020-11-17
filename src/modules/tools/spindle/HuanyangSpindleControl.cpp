@@ -150,7 +150,7 @@ void HuanyangSpindleControl::set_speed(int target_rpm)
     modbus->dir_output->clear();
     // wait 50ms, required by the Modbus standard
     modbus->delay(50);
-
+    SpindleControl::set_speed(target_rpm);
 }
 
 void HuanyangSpindleControl::report_speed()

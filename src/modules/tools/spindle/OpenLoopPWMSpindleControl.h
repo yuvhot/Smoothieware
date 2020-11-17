@@ -14,10 +14,10 @@ public:
     virtual ~OpenLoopPWMSpindleControl();
     void on_module_loaded() override;
 private:
-    void set_speed(int speed_rpm) override;
-    void report_speed(void) override;
-    void turn_on(bool forward) override;
-    void turn_off() override;
+    virtual void set_speed(int speed_rpm) override;
+    virtual void report_speed(void) override;
+    virtual void turn_on(bool forward) override;
+    virtual void turn_off() override;
     float calc_pwm_from_rpm(int rpm) const;
 
     mbed::PwmOut *pwm_pin;

@@ -97,7 +97,7 @@ void AnalogSpindleControl::set_speed(int rpm)
     }
     // calculate the duty cycle and update the PWM
     update_pwm(1.0f / max_rpm * target_rpm);
-
+    SpindleControl::set_speed(target_rpm);
 }
 
 

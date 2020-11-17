@@ -180,6 +180,7 @@ void PWMSpindleControl::turn_off() {
 
 void PWMSpindleControl::set_speed(int rpm) {
     target_rpm = rpm;
+    SpindleControl::set_speed(target_rpm);
 }
 
 

@@ -20,17 +20,12 @@ class SpindleControl: public Module {
     protected:
         bool spindle_on;
         bool spindle_reverse;
-
-    private:
         void on_gcode_received(void *argument) override;
         void on_halt(void *argument) override;
-
-
-        void set_speed_base(float speed);
         
         virtual void turn_on(bool forward) {};
         virtual void turn_off(void) {};
-        virtual void set_speed(int) {};
+        virtual void set_speed(int);
         virtual void report_speed(void) {};
         virtual void set_p_term(float) {};
         virtual void set_i_term(float) {};

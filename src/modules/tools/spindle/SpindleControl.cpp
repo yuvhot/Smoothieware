@@ -41,7 +41,7 @@ void SpindleControl::on_gcode_received(void *argument)
 
     if(gcode->has_letter('S')) {
         // S-Words can appear on their own or before an M[3-5] code
-        set_speed_base(gcode->get_value('S'));
+        set_speed(gcode->get_value('S'));
     }
 
     if (gcode->has_m) {
@@ -70,7 +70,7 @@ void SpindleControl::on_gcode_received(void *argument)
             // M3 with S value provided: set speed
             if (gcode->has_letter('S'))
             {
-                set_speed_base(gcode->get_value('S'));
+                set_speed(gcode->get_value('S'));
             }
 
             // M3: Spindle on
@@ -85,9 +85,8 @@ void SpindleControl::on_gcode_received(void *argument)
     }
 }
 
-void SpindleControl::set_speed_base(float speed) {
-    THEROBOT->set_s_value(speed);
-    set_speed(speed);
+void SpindleControl::set_speed(int speed) {
+    THEROBOT->set_s_value((float) speed);
 }
 
 void SpindleControl::on_halt(void *argument)
